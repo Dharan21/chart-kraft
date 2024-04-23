@@ -16,8 +16,7 @@ const CSVReader: React.FC<CSVReaderProps> = ({ onCSVData }) => {
   const [isOpenTypeSettingDialog, setIsOpenTypeSettingDialog] =
     useState<boolean>(false);
 
-  const [headers, setHeaders] = useState<string[]>([]);
-  const [csvData, setCSVData] = useState<CSVData>([]);
+  const [csvData, setCSVData] = useState<CSVData>({ headers: [], rows: [] });
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -30,11 +29,8 @@ const CSVReader: React.FC<CSVReaderProps> = ({ onCSVData }) => {
       const reader = new FileReader();
       reader.onload = (e) => {
         const contents = e.target?.result as string;
-        console.log(contents);
-        const headers = readHeaders(contents);
-        setHeaders(headers);
-        setIsOpenTypeSettingDialog(true);
         const csv = parseCSV(contents);
+        setIsOpenTypeSettingDialog(true);
         setCSVData(csv);
       };
       reader.readAsText(file);
@@ -57,7 +53,6 @@ const CSVReader: React.FC<CSVReaderProps> = ({ onCSVData }) => {
       {error && <p style={{ color: "red" }}>{error}</p>}
       <HeadersTypeSelectionComponent
         isOpen={isOpenTypeSettingDialog}
-        headers={headers}
         csvData={csvData}
         onClose={() => setIsOpenTypeSettingDialog(false)}
         onDataTypeSelect={handleDataTypeSelect}

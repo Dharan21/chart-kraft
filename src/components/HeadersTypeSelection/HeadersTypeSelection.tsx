@@ -4,7 +4,6 @@ import { CSVData, SupportedDataType } from "@/models/CSVData";
 import { validateCSVData } from "@/utils/utility-functions";
 
 interface HeadersTypeSelectionProps {
-  headers: string[];
   isOpen: boolean;
   csvData: CSVData;
   onClose: () => void;
@@ -14,12 +13,12 @@ interface HeadersTypeSelectionProps {
 }
 
 const HeadersTypeSelectionComponent: React.FC<HeadersTypeSelectionProps> = ({
-  headers,
   isOpen,
   csvData,
   onClose,
   onDataTypeSelect,
 }) => {
+  const headers = csvData.headers.map((x) => x.name);
   const [selectedDataTypes, setSelectedDataTypes] = useState<{
     [key: string]: SupportedDataType;
   }>({});
