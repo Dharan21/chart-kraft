@@ -4,10 +4,20 @@ import CSVReader from "@/components/CSVReader/CSVReader";
 import ChartTabComponent from "@/components/ChartTab/ChartTab";
 import DataFilterComponent from "@/components/DataFilter/DataFilter";
 import { CSVData } from "@/models/CSVData";
+import { ChartOptions } from "@/models/ChartOptions";
+import { GroupByOption } from "@/models/GroupByOptions";
 import { TabData } from "@/models/TabData";
 import React, { useState } from "react";
+import StoreProvider from "./StoreProvider";
 
-const newEmptyTabData: TabData = { chartType: "line", chartOptions: {} };
+const newEmptyTabData: TabData = {
+  chartType: "bar",
+  chartOptions: {} as ChartOptions,
+  GroupByOption: {
+    groupBy: "",
+    aggregates: [{ column: "", aggregateOption: "" }],
+  } as GroupByOption,
+};
 
 export default function Home() {
   const [csvData, setCSVData] = useState<CSVData | undefined>(undefined);
@@ -58,7 +68,7 @@ export default function Home() {
   };
 
   return (
-    <>
+    <StoreProvider>
       <div className="h-[100vh] overflow-hidden">
         <h1 className="text-2xl font-bold mb-4 text-center  h-[15vh]">
           ChartCraft
@@ -122,6 +132,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-    </>
+    </StoreProvider>
   );
 }

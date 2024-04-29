@@ -36,8 +36,10 @@ export function validateCSVData(
   csvData.rows.forEach((row, index) => {
     Object.entries(row).forEach(([header, value]) => {
       const dataType = headerTypes[header];
-      if (dataType === "number" && isNaN(parseFloat(value as string))) {
-        errorLines.push(index + 1);
+      if (!!value) {
+        if (dataType === "number" && isNaN(parseFloat(value as string))) {
+          errorLines.push(index + 1);
+        }
       }
       // else if (dataType === "date" && isNaN(Date.parse(value as string))) {
       //   errorLines.push(index + 1);
@@ -62,7 +64,7 @@ export function convertCSVDataToSpecficTypes(
       Object.entries(row).forEach(([header, value]) => {
         const headerType = datatypes.find((x) => x.header === header);
         if (headerType?.dataType === "number") {
-          newRow[header] = parseFloat(value as string);
+          newRow[header] = !!value ? parseFloat(value as string) : null;
         } else {
           newRow[header] = value;
         }

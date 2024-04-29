@@ -5,7 +5,7 @@ import {
 } from "@/utils/utility-functions";
 import React, { useState, ChangeEvent } from "react";
 import HeadersTypeSelectionComponent from "../HeadersTypeSelection/HeadersTypeSelection";
-import { CSVData, CSVRow, SupportedDataType } from "@/models/CSVData";
+import { CSVData, SupportedDataType } from "@/models/CSVData";
 
 type CSVReaderProps = {
   onCSVData: (data: CSVData) => void;
