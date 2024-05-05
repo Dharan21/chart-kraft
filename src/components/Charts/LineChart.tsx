@@ -1,22 +1,23 @@
 import { updateChartOptions } from "@/lib/features/tabs/tabsSlice";
-import { useAppDispatch, useAppSelector } from "@/lib/hooks";
-import { BarChartOptions } from "@/models/ChartOptions";
-import { BarChart } from "@mui/x-charts";
-import { useEffect, useState } from "react";
+import { useAppSelector, useAppDispatch } from "@/lib/hooks";
+import { LineChartOptions } from "@/models/ChartOptions";
+import { LineChart } from "@mui/x-charts";
+import { useState, useEffect } from "react";
 
-type BarChartProps = {
-  chartOptions: BarChartOptions;
+type LineChartProps = {
+  chartOptions: LineChartOptions;
 };
 
-export default function BarChartComponent({ chartOptions }: BarChartProps) {
+export default function LineChartComponent({ chartOptions }: LineChartProps) {
   const csvData = useAppSelector(
     (state) => state.tabs.data[state.tabs.currentTabIndex].aggregatedData
   );
-  const [headerNames, setHeaderNames] = useState<string[]>(
-    csvData.headers.map((x) => x.name)
-  );
+
   const [numberTypeHeaders, setNumberTypeHeaders] = useState(
     csvData.headers.filter((x) => x.type === "number")
+  );
+  const [headerNames, setHeaderNames] = useState<string[]>(
+    csvData.headers.filter((x) => x.type === "number").map((x) => x.name)
   );
 
   const [plotYOptions, setPlotYOptions] = useState(numberTypeHeaders);
@@ -26,10 +27,10 @@ export default function BarChartComponent({ chartOptions }: BarChartProps) {
 
   useEffect(() => {
     if (!csvData) return;
-    const headerNames = csvData.headers.map((x) => x.name);
     const numberTypeHeaders = csvData.headers.filter(
       (x) => x.type === "number"
     );
+    const headerNames = numberTypeHeaders.map((x) => x.name);
     setHeaderNames(headerNames);
     setNumberTypeHeaders(numberTypeHeaders);
     setPlotYOptions(
@@ -40,7 +41,7 @@ export default function BarChartComponent({ chartOptions }: BarChartProps) {
     );
   }, [csvData]);
 
-  const handleChartOptionsChange = (chartOptions: BarChartOptions) => {
+  const handleChartOptionsChange = (chartOptions: LineChartOptions) => {
     dispatch(updateChartOptions(chartOptions));
   };
 
@@ -68,7 +69,6 @@ export default function BarChartComponent({ chartOptions }: BarChartProps) {
     });
     setPlotYOptions(numberTypeHeaders.filter((x) => x.name !== e.target.value));
   };
-
   return (
     <>
       <div className="flex">
@@ -113,7 +113,7 @@ export default function BarChartComponent({ chartOptions }: BarChartProps) {
       {chartOptions.plotX &&
         chartOptions.plotY &&
         chartOptions.plotY.length > 0 && (
-          <BarChart
+          <LineChart
             height={400}
             dataset={csvData.rows}
             xAxis={[{ scaleType: "band", dataKey: chartOptions.plotX }]}

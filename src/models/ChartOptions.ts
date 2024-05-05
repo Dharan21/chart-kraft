@@ -5,4 +5,7 @@ export interface BarChartOptions {
   plotY: string[];
 }
 
-export interface LineChartOptions {}
+export interface LineChartOptions {
+  plotX: string;
+  plotY: string[];
+}

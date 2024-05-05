@@ -1,9 +1,10 @@
 import { ChartType, TabData } from "@/models/TabData";
 import BarChartComponent from "../Charts/BarChart";
-import { BarChartOptions } from "@/models/ChartOptions";
+import { BarChartOptions, LineChartOptions } from "@/models/ChartOptions";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { updateTabData } from "@/lib/features/tabs/tabsSlice";
 import DataAggregationComponent from "../DataAggregation/DataAggregation";
+import LineChartComponent from "../Charts/LineChart";
 
 export default function ChartTabComponent() {
   const csvData = useAppSelector((state) => state.filters.filteredData);
@@ -53,6 +54,11 @@ export default function ChartTabComponent() {
           {tabData.chartType === "bar" && (
             <BarChartComponent
               chartOptions={tabData.chartOptions as BarChartOptions}
+            />
+          )}
+          {tabData.chartType === "line" && (
+            <LineChartComponent
+              chartOptions={tabData.chartOptions as LineChartOptions}
             />
           )}
         </div>
