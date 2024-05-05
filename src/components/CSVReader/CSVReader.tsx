@@ -6,12 +6,13 @@ import {
 import React, { useState, ChangeEvent } from "react";
 import HeadersTypeSelectionComponent from "../HeadersTypeSelection/HeadersTypeSelection";
 import { CSVData, SupportedDataType } from "@/models/CSVData";
+import { useAppDispatch } from "@/lib/hooks";
+import { addFileData } from "@/lib/features/filters/filtersSlice";
+import { resetTabs } from "@/lib/features/tabs/tabsSlice";
 
-type CSVReaderProps = {
-  onCSVData: (data: CSVData) => void;
-};
+export default function CSVReader() {
+  const dispatch = useAppDispatch();
 
-const CSVReader: React.FC<CSVReaderProps> = ({ onCSVData }) => {
   const [error, setError] = useState<string>("");
   const [isOpenTypeSettingDialog, setIsOpenTypeSettingDialog] =
     useState<boolean>(false);
@@ -44,7 +45,8 @@ const CSVReader: React.FC<CSVReaderProps> = ({ onCSVData }) => {
     datatypes: { header: string; dataType: SupportedDataType }[]
   ) => {
     const data = convertCSVDataToSpecficTypes(csvData, datatypes);
-    onCSVData(data);
+    dispatch(addFileData(data));
+    dispatch(resetTabs(data));
   };
 
   return (
@@ -59,6 +61,4 @@ const CSVReader: React.FC<CSVReaderProps> = ({ onCSVData }) => {
       />
     </div>
   );
-};
-
-export default CSVReader;
+}

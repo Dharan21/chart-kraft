@@ -12,12 +12,12 @@ interface HeadersTypeSelectionProps {
   ) => void;
 }
 
-const HeadersTypeSelectionComponent: React.FC<HeadersTypeSelectionProps> = ({
+export default function HeadersTypeSelectionComponent({
   isOpen,
   csvData,
   onClose,
   onDataTypeSelect,
-}) => {
+}: HeadersTypeSelectionProps) {
   const headers = csvData.headers.map((x) => x.name);
   const [selectedDataTypes, setSelectedDataTypes] = useState<{
     [key: string]: SupportedDataType;
@@ -37,7 +37,6 @@ const HeadersTypeSelectionComponent: React.FC<HeadersTypeSelectionProps> = ({
 
   const validate = () => {
     const errorLineNos = validateCSVData(csvData, selectedDataTypes);
-    console.log(errorLineNos);
     if (errorLineNos.length > 0) {
       alert("errorLineNos: " + errorLineNos.join(", "));
     } else {
@@ -46,6 +45,7 @@ const HeadersTypeSelectionComponent: React.FC<HeadersTypeSelectionProps> = ({
   };
 
   const handleConfirm = () => {
+    setIsShowStartCrafting(false);
     onClose();
     const selectedDataTypesArray = Object.entries(selectedDataTypes).map(
       ([header, dataType]) => ({
@@ -60,13 +60,13 @@ const HeadersTypeSelectionComponent: React.FC<HeadersTypeSelectionProps> = ({
     <DialogComponent isOpen={isOpen} onClose={onClose}>
       <h2>Select Data Types</h2>
       <form>
-        <div className="max-h-[40vh] overflow-y-auto">
+        <div className="max-h-[40vh] overflow-y-auto mb-2">
           {headers.map((header) => (
-            <div key={header}>
+            <div key={header} className="flex justify-between">
               <label htmlFor={header}>{header}</label>
               <select
                 id={header}
-                value={selectedDataTypes[header] || ""}
+                value={selectedDataTypes[header] || "string"}
                 onChange={(e) =>
                   handleDataTypeSelect(
                     header,
@@ -82,17 +82,23 @@ const HeadersTypeSelectionComponent: React.FC<HeadersTypeSelectionProps> = ({
           ))}
         </div>
         {isShowStartCrafting ? (
-          <button type="button" onClick={handleConfirm}>
+          <button
+            type="button"
+            className="bg-green-500 px-2 py-1 rounded-2xl"
+            onClick={handleConfirm}
+          >
             Start Crafting
           </button>
         ) : (
-          <button type="button" onClick={validate}>
+          <button
+            type="button"
+            className="bg-blue-500 px-2 py-1 rounded-2xl"
+            onClick={validate}
+          >
             Validate
           </button>
         )}
       </form>
     </DialogComponent>
   );
-};
-
-export default HeadersTypeSelectionComponent;
+}

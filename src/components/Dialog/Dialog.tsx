@@ -22,9 +22,9 @@ const DialogComponent: React.FC<DialogProps> = ({
           <dialog
             open={isOpen}
             onClose={onClose}
-            className="fixed inset-0 z-50 overflow-y-auto max-h-[50vh]"
+            className="fixed inset-0 z-50 overflow-y-auto max-h-[70vh]"
           >
-            {children}
+            <div className="p-5">{children}</div>
           </dialog>
         </>
       )}

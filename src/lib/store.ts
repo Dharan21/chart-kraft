@@ -1,8 +1,13 @@
 import { configureStore } from "@reduxjs/toolkit";
+import filtersSlice from "./features/filters/filtersSlice";
+import tabsSlice from "./features/tabs/tabsSlice";
 
 export const makeStore = () => {
   return configureStore({
-    reducer: {},
+    reducer: {
+      filters: filtersSlice,
+      tabs: tabsSlice,
+    },
   });
 };
 

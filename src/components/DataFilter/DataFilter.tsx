@@ -1,62 +1,40 @@
-import { CSVData, SupportedDataType } from "@/models/CSVData";
-import { FilterOptions, FilterRow } from "@/models/FilterOptions";
-import { useState } from "react";
+import {
+  addFilter,
+  applyFilters,
+  removeFilter,
+  resetFilters,
+  setFilterHeader,
+  setFilterType,
+  setFilterValue,
+} from "@/lib/features/filters/filtersSlice";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { FilterOptions } from "@/models/FilterOptions";
 
-type DataFilterProps = {
-  csvData: CSVData;
-  onFilterData: (filteredData: CSVData) => void;
-};
+export default function DataFilterComponent() {
+  const csvData = useAppSelector((state) => state.filters.data);
+  const filters = useAppSelector((state) => state.filters.filters);
+  if (!csvData) return <></>;
 
-export default function DataFilterComponent({
-  csvData,
-  onFilterData,
-}: DataFilterProps) {
-  const [filterRows, setFilterRows] = useState<FilterRow[]>([]);
+  const dispatch = useAppDispatch();
 
   const handleAddFilter = () => {
-    setFilterRows([
-      ...filterRows,
-      { header: "", dataType: "", type: "", value: "" },
-    ]);
+    dispatch(addFilter());
   };
 
   const handleHeaderDropdownChange = (index: number, header: string) => {
-    const newFilterRows = [...filterRows];
     const type = csvData.headers.find((x) => x.name === header)?.type;
-    switch (type) {
-      case "number":
-        newFilterRows[index] = {
-          header,
-          dataType: "number",
-          type: "",
-          value: "",
-        };
-        break;
-      case "string":
-        newFilterRows[index] = {
-          header,
-          dataType: "string",
-          type: "",
-          value: "",
-        };
-        break;
-    }
-    setFilterRows(newFilterRows);
+    dispatch(setFilterHeader({ index, header, type: type ?? "string" }));
   };
 
   const handleFilterTypeChange = (
     index: number,
     value: FilterOptions
   ): void => {
-    const newFilterRows = [...filterRows];
-    newFilterRows[index].type = value;
-    setFilterRows(newFilterRows);
+    dispatch(setFilterType({ index, value }));
   };
 
   const handleInputChange = (index: number, value: string) => {
-    const newFilterRows = [...filterRows];
-    newFilterRows[index].value = value;
-    setFilterRows(newFilterRows);
+    dispatch(setFilterValue({ index, value }));
   };
 
   const handleApplyFilter = () => {
@@ -65,74 +43,12 @@ export default function DataFilterComponent({
       alert("Invalid filter data");
       return;
     }
-    let filteredData = csvData.rows;
-    filterRows.forEach((row) => {
-      switch (row.dataType) {
-        case "number":
-          switch (row.type) {
-            case "greater":
-              filteredData = filteredData.filter(
-                (data) => Number(data[row.header]) > Number(row.value)
-              );
-              break;
-            case "lesser":
-              filteredData = filteredData.filter(
-                (data) => Number(data[row.header]) < Number(row.value)
-              );
-              break;
-            case "equal":
-              filteredData = filteredData.filter(
-                (data) => data[row.header] === row.value
-              );
-              break;
-            case "notEqual":
-              filteredData = filteredData.filter(
-                (data) => data[row.header] !== row.value
-              );
-              break;
-          }
-          break;
-        case "string":
-          switch (row.type) {
-            case "equal":
-              filteredData = filteredData.filter(
-                (data) => data[row.header] === row.value
-              );
-              break;
-            case "notEqual":
-              filteredData = filteredData.filter(
-                (data) => data[row.header] !== row.value
-              );
-              break;
-            case "contains":
-              filteredData = filteredData.filter((data) =>
-                (data[row.header] as string).includes(row.value)
-              );
-              break;
-            case "notContains":
-              filteredData = filteredData.filter(
-                (data) => !(data[row.header] as string).includes(row.value)
-              );
-              break;
-            case "startsWith":
-              filteredData = filteredData.filter((data) =>
-                (data[row.header] as string).startsWith(row.value)
-              );
-              break;
-            case "endsWith":
-              filteredData = filteredData.filter((data) =>
-                (data[row.header] as string).endsWith(row.value)
-              );
-              break;
-          }
-          break;
-      }
-    });
-    onFilterData({ headers: csvData.headers, rows: filteredData });
+
+    dispatch(applyFilters());
   };
 
   const validateFilterRows = (): boolean => {
-    return filterRows.every((row) => {
+    return filters.every((row) => {
       const isHeaderSelected = row.header !== "" && row.type !== "";
       const isValuePresent = row.value !== "";
       switch (row.dataType) {
@@ -147,14 +63,11 @@ export default function DataFilterComponent({
   };
 
   const handleFilterRemove = (index: number): void => {
-    const newFilterRows = [...filterRows];
-    newFilterRows.splice(index, 1);
-    setFilterRows(newFilterRows);
+    dispatch(removeFilter(index));
   };
 
   const handleResetFilters = () => {
-    setFilterRows([]);
-    onFilterData(csvData);
+    dispatch(resetFilters());
   };
 
   return (
@@ -168,7 +81,7 @@ export default function DataFilterComponent({
         >
           Add Filter
         </button>
-        {filterRows.map((row, index) => (
+        {filters.map((row, index) => (
           <div key={index} className="p-2 flex flex-row">
             <select
               className="w-1/4"
@@ -228,7 +141,7 @@ export default function DataFilterComponent({
             </button>
           </div>
         ))}
-        {filterRows.length > 0 && (
+        {filters.length > 0 && (
           <button
             className="p-2 bg-green-500"
             type="button"
@@ -248,3 +161,4 @@ export default function DataFilterComponent({
     </>
   );
 }
+

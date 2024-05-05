@@ -1,30 +1,36 @@
-import { CSVData } from "@/models/CSVData";
+import { updateChartOptions } from "@/lib/features/tabs/tabsSlice";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { BarChartOptions } from "@/models/ChartOptions";
 import { BarChart } from "@mui/x-charts";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type BarChartProps = {
-  csvData: CSVData;
   chartOptions: BarChartOptions;
-  onChartOptionsChange: (options: BarChartOptions) => void;
 };
 
-export default function BarChartComponent({
-  csvData,
-  chartOptions,
-  onChartOptionsChange,
-}: BarChartProps) {
-  const headerNames = csvData.headers.map((x) => x.name);
-  const numberTypeHeaders = csvData.headers.filter((x) => x.type === "number");
+export default function BarChartComponent({ chartOptions }: BarChartProps) {
+  const csvData = useAppSelector(
+    (state) => state.tabs.data[state.tabs.currentTabIndex].aggregatedData
+  );
+  let headerNames = csvData.headers.map((x) => x.name);
+  let numberTypeHeaders = csvData.headers.filter((x) => x.type === "number");
 
   const [plotYOptions, setPlotYOptions] = useState(numberTypeHeaders);
   const [plotXOptions, setPlotXOptions] = useState<string[]>(headerNames);
-  const [selectedPlotXvalue, setSelectedPlotXValue] = useState<string>(
-    chartOptions.plotX ?? ""
-  );
-  const [selectedPlotYValues, setSelectedPlotYValues] = useState<string[]>(
-    chartOptions.plotY
-  );
+
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    if (!csvData) return;
+    headerNames = csvData.headers.map((x) => x.name);
+    numberTypeHeaders = csvData.headers.filter((x) => x.type === "number");
+    setPlotYOptions(numberTypeHeaders);
+    setPlotXOptions(headerNames);
+  }, [csvData]);
+
+  const handleChartOptionsChange = (chartOptions: BarChartOptions) => {
+    dispatch(updateChartOptions(chartOptions));
+  };
 
   const handleMultipleSelectionChange = (
     e: React.ChangeEvent<HTMLSelectElement>
@@ -36,14 +42,18 @@ export default function BarChartComponent({
         selectedValues.push(options[i].value);
       }
     }
-    setSelectedPlotYValues(selectedValues);
-    onChartOptionsChange({ plotX: selectedPlotXvalue, plotY: selectedValues });
+    handleChartOptionsChange({
+      plotX: chartOptions.plotX,
+      plotY: selectedValues,
+    });
     setPlotXOptions(headerNames.filter((x) => !selectedValues.includes(x)));
   };
 
   const handleSelectionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedPlotXValue(e.target.value);
-    onChartOptionsChange({ plotX: e.target.value, plotY: selectedPlotYValues });
+    handleChartOptionsChange({
+      plotX: e.target.value,
+      plotY: chartOptions.plotY,
+    });
     setPlotYOptions(numberTypeHeaders.filter((x) => x.name !== e.target.value));
   };
 
@@ -56,7 +66,7 @@ export default function BarChartComponent({
             name="plot-x"
             id="plot-x"
             onChange={handleSelectionChange}
-            value={selectedPlotXvalue}
+            value={chartOptions.plotX ?? ""}
           >
             <option disabled value="">
               Select
@@ -73,7 +83,7 @@ export default function BarChartComponent({
           <select
             name="plot-y"
             id="plot-y"
-            value={selectedPlotYValues}
+            value={chartOptions.plotY ?? [""]}
             multiple
             onChange={handleMultipleSelectionChange}
           >
@@ -88,14 +98,14 @@ export default function BarChartComponent({
           </select>
         </div>
       </div>
-      {selectedPlotXvalue &&
-        selectedPlotYValues &&
-        selectedPlotYValues.length > 0 && (
+      {chartOptions.plotX &&
+        chartOptions.plotY &&
+        chartOptions.plotY.length > 0 && (
           <BarChart
             height={400}
             dataset={csvData.rows}
-            xAxis={[{ scaleType: "band", dataKey: selectedPlotXvalue }]}
-            series={selectedPlotYValues.map((x) => ({ dataKey: x, label: x }))}
+            xAxis={[{ scaleType: "band", dataKey: chartOptions.plotX }]}
+            series={chartOptions.plotY.map((x) => ({ dataKey: x, label: x }))}
           />
         )}
     </>
