@@ -80,7 +80,7 @@ export default function DataAggregationComponent() {
   return (
     <>
       <div>Group By</div>
-      <div className="flex">
+      <div className="flex gap-2">
         <div className="flex flex-col">
           <label htmlFor="groupBy">Column on Group By</label>
           <select

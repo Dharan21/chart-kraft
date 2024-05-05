@@ -1,4 +1,4 @@
-export type ChartOptions = BarChartOptions | LineChartOptions;
+export type ChartOptions = BarChartOptions | LineChartOptions | PieChartOptions;
 
 export interface BarChartOptions {
   plotX: string;
@@ -9,3 +9,11 @@ export interface LineChartOptions {
   plotX: string;
   plotY: string[];
 }
+
+export interface PieChartOptions {
+  valueColumn: string;
+  labelColumn: string;
+}
+
+export const availableChartOptions = ["bar", "line", "pie"];
+export type ChartType = "line" | "bar" | "pie";

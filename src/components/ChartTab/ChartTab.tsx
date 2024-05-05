@@ -1,10 +1,17 @@
-import { ChartType, TabData } from "@/models/TabData";
+import { TabData } from "@/models/TabData";
 import BarChartComponent from "../Charts/BarChart";
-import { BarChartOptions, LineChartOptions } from "@/models/ChartOptions";
+import {
+  BarChartOptions,
+  ChartType,
+  LineChartOptions,
+  PieChartOptions,
+  availableChartOptions,
+} from "@/models/ChartOptions";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { updateTabData } from "@/lib/features/tabs/tabsSlice";
 import DataAggregationComponent from "../DataAggregation/DataAggregation";
 import LineChartComponent from "../Charts/LineChart";
+import PieChartCompnent from "../Charts/PieChart";
 
 export default function ChartTabComponent() {
   const csvData = useAppSelector((state) => state.filters.filteredData);
@@ -43,8 +50,11 @@ export default function ChartTabComponent() {
                 value={tabData.chartType}
                 onChange={handleChartTypeChange}
               >
-                <option value="bar">bar</option>
-                <option value="line">line</option>
+                {availableChartOptions.map((opt, i) => (
+                  <option key={i} value={opt}>
+                    {opt}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -59,6 +69,11 @@ export default function ChartTabComponent() {
           {tabData.chartType === "line" && (
             <LineChartComponent
               chartOptions={tabData.chartOptions as LineChartOptions}
+            />
+          )}
+          {tabData.chartType === "pie" && (
+            <PieChartCompnent
+              chartOptions={tabData.chartOptions as PieChartOptions}
             />
           )}
         </div>

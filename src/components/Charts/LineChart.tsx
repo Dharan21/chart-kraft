@@ -71,7 +71,7 @@ export default function LineChartComponent({ chartOptions }: LineChartProps) {
   };
   return (
     <>
-      <div className="flex">
+      <div className="flex gap-2">
         <div className="flex flex-col">
           <label htmlFor="">Plot on x</label>
           <select
