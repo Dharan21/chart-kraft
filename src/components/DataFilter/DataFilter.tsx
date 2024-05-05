@@ -13,9 +13,9 @@ import { FilterOptions } from "@/models/FilterOptions";
 export default function DataFilterComponent() {
   const csvData = useAppSelector((state) => state.filters.data);
   const filters = useAppSelector((state) => state.filters.filters);
-  if (!csvData) return <></>;
-
   const dispatch = useAppDispatch();
+
+  if (!csvData) return <></>;
 
   const handleAddFilter = () => {
     dispatch(addFilter());
@@ -161,4 +161,3 @@ export default function DataFilterComponent() {
     </>
   );
 }
-

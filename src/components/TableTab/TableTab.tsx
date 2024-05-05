@@ -11,17 +11,21 @@ import React from "react";
 
 export default function TableTabComponent() {
   const csvData = useAppSelector((state) => state.filters.filteredData);
-  if (!csvData) {
-    return <></>;
-  }
 
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const visibleRows = React.useMemo(
     () =>
-      csvData.rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
+      (csvData?.rows ?? []).slice(
+        page * rowsPerPage,
+        page * rowsPerPage + rowsPerPage
+      ),
     [page, rowsPerPage, csvData]
   );
+
+  if (!csvData) {
+    return <></>;
+  }
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);

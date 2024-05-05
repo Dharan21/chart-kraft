@@ -12,8 +12,12 @@ export default function BarChartComponent({ chartOptions }: BarChartProps) {
   const csvData = useAppSelector(
     (state) => state.tabs.data[state.tabs.currentTabIndex].aggregatedData
   );
-  let headerNames = csvData.headers.map((x) => x.name);
-  let numberTypeHeaders = csvData.headers.filter((x) => x.type === "number");
+  const [headerNames, setHeaderNames] = useState<string[]>(
+    csvData.headers.map((x) => x.name)
+  );
+  const [numberTypeHeaders, setNumberTypeHeaders] = useState(
+    csvData.headers.filter((x) => x.type === "number")
+  );
 
   const [plotYOptions, setPlotYOptions] = useState(numberTypeHeaders);
   const [plotXOptions, setPlotXOptions] = useState<string[]>(headerNames);
@@ -22,8 +26,8 @@ export default function BarChartComponent({ chartOptions }: BarChartProps) {
 
   useEffect(() => {
     if (!csvData) return;
-    headerNames = csvData.headers.map((x) => x.name);
-    numberTypeHeaders = csvData.headers.filter((x) => x.type === "number");
+    setHeaderNames(csvData.headers.map((x) => x.name));
+    setNumberTypeHeaders(csvData.headers.filter((x) => x.type === "number"));
     setPlotYOptions(numberTypeHeaders);
     setPlotXOptions(headerNames);
   }, [csvData]);
