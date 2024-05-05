@@ -37,6 +37,10 @@ export function validateCSVData(
     Object.entries(row).forEach(([header, value]) => {
       const dataType = headerTypes[header];
       if (!!value) {
+        value = (value as string).trim();
+        if (value.toLowerCase() == "null") {
+          value = null;
+        }
         if (dataType === "number" && isNaN(parseFloat(value as string))) {
           errorLines.push(index + 1);
         }
@@ -55,18 +59,21 @@ export function convertCSVDataToSpecficTypes(
   datatypes: { header: string; dataType: SupportedDataType }[]
 ): CSVData {
   return {
-    headers: csvData.headers.map((header) => {
-      const headerType = datatypes.find((x) => x.header === header.name);
-      return { name: header.name, type: headerType?.dataType || "string" };
-    }),
+    headers: datatypes.map((x) => ({ name: x.header, type: x.dataType })),
     rows: csvData.rows.map((row) => {
       const newRow: CSVRow = {};
       Object.entries(row).forEach(([header, value]) => {
         const headerType = datatypes.find((x) => x.header === header);
-        if (headerType?.dataType === "number") {
-          newRow[header] = !!value ? parseFloat(value as string) : null;
-        } else {
-          newRow[header] = value;
+        if (headerType) {
+          value = (value as string).trim();
+          if (value.toLowerCase() == "null") {
+            value = null;
+          }
+          if (headerType.dataType === "number") {
+            newRow[header] = !!value ? parseFloat(value as string) : null;
+          } else if (headerType.dataType === "string") {
+            newRow[header] = value;
+          }
         }
       });
       return newRow;

@@ -26,8 +26,11 @@ export default function BarChartComponent({ chartOptions }: BarChartProps) {
 
   useEffect(() => {
     if (!csvData) return;
-    setHeaderNames(csvData.headers.map((x) => x.name));
-    setNumberTypeHeaders(csvData.headers.filter((x) => x.type === "number"));
+    console.log(csvData);
+    const headerNames = csvData.headers.map((x) => x.name);
+    const numberTypeHeaders = csvData.headers.filter((x) => x.type === "number");
+    setHeaderNames(headerNames);
+    setNumberTypeHeaders(numberTypeHeaders);
     setPlotYOptions(numberTypeHeaders);
     setPlotXOptions(headerNames);
   }, [csvData]);

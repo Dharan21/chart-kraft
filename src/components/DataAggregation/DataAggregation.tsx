@@ -9,6 +9,7 @@ import {
 } from "@/lib/features/tabs/tabsSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { AggregateOptions, GroupByOptions } from "@/models/GroupByOptions";
+import { useEffect } from "react";
 
 export default function DataAggregationComponent() {
   const tabData = useAppSelector(
@@ -16,6 +17,11 @@ export default function DataAggregationComponent() {
   );
   const csvData = useAppSelector((state) => state.filters.filteredData);
   const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    if (!csvData) return;
+    handleApplyAggregations();
+  }, [csvData]);
 
   if (!csvData || !tabData) {
     return <></>;
