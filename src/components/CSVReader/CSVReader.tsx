@@ -3,7 +3,7 @@ import {
   parseCSV,
   readHeaders,
 } from "@/utils/utility-functions";
-import React, { useState, ChangeEvent } from "react";
+import React, { useState, ChangeEvent, useRef } from "react";
 import HeadersTypeSelectionComponent from "../HeadersTypeSelection/HeadersTypeSelection";
 import { CSVData, SupportedDataType } from "@/models/CSVData";
 import { useAppDispatch } from "@/lib/hooks";
@@ -12,6 +12,7 @@ import { resetTabs } from "@/lib/features/tabs/tabsSlice";
 
 export default function CSVReader() {
   const dispatch = useAppDispatch();
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const [error, setError] = useState<string>("");
   const [isOpenTypeSettingDialog, setIsOpenTypeSettingDialog] =
@@ -49,14 +50,24 @@ export default function CSVReader() {
     dispatch(resetTabs(data));
   };
 
+  const handleHeaderTypeSelectOnClose = () => {
+    fileRef.current?.value && (fileRef.current.value = "");
+    setIsOpenTypeSettingDialog(false);
+  };
+
   return (
     <div>
-      <input type="file" accept=".csv" onChange={handleFileChange} />
+      <input
+        ref={fileRef}
+        type="file"
+        accept=".csv"
+        onChange={handleFileChange}
+      />
       {error && <p style={{ color: "red" }}>{error}</p>}
       <HeadersTypeSelectionComponent
         isOpen={isOpenTypeSettingDialog}
         csvData={csvData}
-        onClose={() => setIsOpenTypeSettingDialog(false)}
+        onClose={handleHeaderTypeSelectOnClose}
         onDataTypeSelect={handleDataTypeSelect}
       />
     </div>

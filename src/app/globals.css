@@ -2,32 +2,75 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-}
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap");
 
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
+    --primary-light: #4f8a8b;
+    --secondary-light: #ee6c4d;
+    --background-light: #f2cc8f;
+    --text-light: #3d405b;
+    --success-light: #81c784;
+    --danger-light: #e57373;
+    --disabled-light: #cccccc;
+
+    --primary-dark: #81b29a;
+    --secondary-dark: #f4f1de;
+    --background-dark: #3d405b;
+    --text-dark: #f2cc8f;
+    --success-dark: #388e3c;
+    --danger-dark: #d32f2f;
+    --disabled-dark: #666666;
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root {
+      --primary: var(--primary-light);
+      --secondary: var(--secondary-light);
+      --background: var(--background-light);
+      --text: var(--text-light);
+      --success: var(--success-light);
+      --danger: var(--danger-light);
+      --disabled: var(--disabled-light);
+    }
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --primary: var(--primary-dark);
+      --secondary: var(--secondary-dark);
+      --background: var(--background-dark);
+      --text: var(--text-dark);
+      --success: var(--success-dark);
+      --danger: var(--danger-dark);
+      --disabled: var(--disabled-dark);
+    }
   }
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  color: var(--text);
+  background-color: var(--background);
+  font-family: "Roboto", "Lato", "Open Sans", sans-serif;
+  box-sizing: border-box;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+select {
+  background: var(--background);
+  border: var(--text) 1px solid;
+}
+
+input {
+  background: var(--background);
+  border-color: var(--text);
+}
+
+input:focus {
+  border-color: var(--text);
+}
+
+input[type="text"] {
+  border: 1px solid var(--text);
 }

@@ -39,7 +39,7 @@ export default function ChartTabComponent() {
 
   return (
     <>
-      <div className="flex h-[65vh]">
+      <div className="flex">
         <div className="w-1/12">
           <div className="flex flex-col">
             <div className="p-2">Chart Types</div>

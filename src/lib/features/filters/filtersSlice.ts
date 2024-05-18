@@ -49,32 +49,33 @@ export const filtersSlice = createSlice({
       state.filters[action.payload.index].value = action.payload.value;
     },
     removeFilter: (state, action: PayloadAction<number>) => {
-      state.filters = state.filters.splice(action.payload, 1);
+      state.filters.splice(action.payload, 1);
     },
     applyFilters: (state) => {
       let filteredData = state.data?.rows ?? [];
       state.filters.forEach((row) => {
         switch (row.dataType) {
           case "number":
+            const val = Number(row.value);
             switch (row.type) {
               case "greater":
                 filteredData = filteredData.filter(
-                  (data) => Number(data[row.header]) > Number(row.value)
+                  (data) => Number(data[row.header]) > val
                 );
                 break;
               case "lesser":
                 filteredData = filteredData.filter(
-                  (data) => Number(data[row.header]) < Number(row.value)
+                  (data) => Number(data[row.header]) < val
                 );
                 break;
               case "equal":
                 filteredData = filteredData.filter(
-                  (data) => data[row.header] === row.value
+                  (data) => data[row.header] === val
                 );
                 break;
               case "notEqual":
                 filteredData = filteredData.filter(
-                  (data) => data[row.header] !== row.value
+                  (data) => data[row.header] !== val
                 );
                 break;
             }

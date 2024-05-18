@@ -16,13 +16,13 @@ const DialogComponent: React.FC<DialogProps> = ({
       {isOpen && (
         <>
           <div
-            className="fixed inset-0 bg-black opacity-50"
+            className="fixed inset-0 bg-black opacity-50 text-text"
             onClick={onClose}
           ></div>
           <dialog
             open={isOpen}
             onClose={onClose}
-            className="fixed inset-0 z-50 overflow-y-auto max-h-[70vh]"
+            className="fixed inset-0 z-50 overflow-y-auto max-h-[70vh] text-text bg-background"
           >
             <div className="p-5">{children}</div>
           </dialog>

@@ -8,7 +8,12 @@ import {
   setFilterValue,
 } from "@/lib/features/filters/filtersSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
-import { FilterOptions } from "@/models/FilterOptions";
+import {
+  FilterOptions,
+  numberFilterOptions,
+  stringFilterOptions,
+} from "@/models/FilterOptions";
+import { ImCross } from "react-icons/im";
 
 export default function DataFilterComponent() {
   const csvData = useAppSelector((state) => state.filters.data);
@@ -63,6 +68,7 @@ export default function DataFilterComponent() {
   };
 
   const handleFilterRemove = (index: number): void => {
+    console.log("remove filter", index);
     dispatch(removeFilter(index));
   };
 
@@ -72,17 +78,17 @@ export default function DataFilterComponent() {
 
   return (
     <>
-      <div className="flex flex-col">
-        <div className="p-2">Filter Data</div>
+      <div className="flex flex-col gap-2">
+        <div>Filter Data</div>
         <button
-          className="p-2 bg-blue-500"
+          className="p-2 bg-primary"
           type="button"
           onClick={handleAddFilter}
         >
           Add Filter
         </button>
         {filters.map((row, index) => (
-          <div key={index} className="p-2 flex flex-row">
+          <div key={index} className="flex flex-row gap-2">
             <select
               className="w-1/4"
               name={`filter-data-${index}`}
@@ -107,24 +113,18 @@ export default function DataFilterComponent() {
               }
             >
               <option value="">Select</option>
-              {row.dataType === "number" && (
-                <>
-                  <option value="greater">Greater</option>
-                  <option value="lesser">Lesser</option>
-                  <option value="equal">Equal</option>
-                  <option value="notEqual">Not Equal</option>
-                </>
-              )}
-              {row.dataType === "string" && (
-                <>
-                  <option value="equal">Equal</option>
-                  <option value="notEqual">Not Equal</option>
-                  <option value="contains">Contains</option>
-                  <option value="notContains">Not Contains</option>
-                  <option value="startsWith">Starts With</option>
-                  <option value="endsWith">Ends With</option>
-                </>
-              )}
+              {row.dataType === "number" &&
+                numberFilterOptions.map((opt, i) => (
+                  <option key={i} value={opt}>
+                    {opt}
+                  </option>
+                ))}
+              {row.dataType === "string" &&
+                stringFilterOptions.map((opt, i) => (
+                  <option key={i} value={opt}>
+                    {opt}
+                  </option>
+                ))}
             </select>
             <input
               className="w-1/4"
@@ -132,18 +132,17 @@ export default function DataFilterComponent() {
               value={row.value}
               onChange={(e) => handleInputChange(index, e.target.value)}
             />
-            <button
-              className="w-1/4 bg-red-500"
-              type="button"
-              onClick={() => handleFilterRemove(index)}
-            >
-              x
-            </button>
+            <div className="w-1/12 flex justify-center items-center">
+              <ImCross
+                className="cursor-pointer text-danger"
+                onClick={() => handleFilterRemove(index)}
+              />
+            </div>
           </div>
         ))}
         {filters.length > 0 && (
           <button
-            className="p-2 bg-green-500"
+            className="p-2 bg-success"
             type="button"
             onClick={handleApplyFilter}
           >
@@ -151,7 +150,7 @@ export default function DataFilterComponent() {
           </button>
         )}
         <button
-          className="p-2 bg-yellow-500"
+          className="p-2 bg-secondary"
           type="button"
           onClick={handleResetFilters}
         >

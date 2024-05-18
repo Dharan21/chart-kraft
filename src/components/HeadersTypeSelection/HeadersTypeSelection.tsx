@@ -1,7 +1,8 @@
-import React, { use, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import DialogComponent from "@/components/Dialog/Dialog";
 import { CSVData, SupportedDataType } from "@/models/CSVData";
 import { validateCSVData } from "@/utils/utility-functions";
+import { ImCross } from "react-icons/im";
 
 interface HeadersTypeSelectionProps {
   isOpen: boolean;
@@ -65,13 +66,13 @@ export default function HeadersTypeSelectionComponent({
 
   return (
     <DialogComponent isOpen={isOpen} onClose={onClose}>
-      <h2>Select Data Types</h2>
+      <div className="text-xl">Select Data Types</div>
       <form>
         <div className="max-h-[40vh] overflow-y-auto mb-2">
           {headersToShow.map((header, index) => (
-            <div key={header} className="flex justify-between mb-2">
+            <div key={header} className="flex justify-between mb-2 mr-2">
               <label htmlFor={header}>{header}</label>
-              <div className="flex gap-1">
+              <div className="flex gap-3">
                 <select
                   id={header}
                   value={selectedDataTypes[header] || "string"}
@@ -86,12 +87,10 @@ export default function HeadersTypeSelectionComponent({
                   <option value="string">String</option>
                   <option value="number">Number</option>
                 </select>
-                <div
-                  className="bg-red-500 p-1 rounderd-xl text-white cursor-pointer"
+                <ImCross
+                  className="cursor-pointer h-full text-danger"
                   onClick={() => handleRemoveColumnClick(header)}
-                >
-                  Remove
-                </div>
+                />
               </div>
             </div>
           ))}
@@ -99,7 +98,7 @@ export default function HeadersTypeSelectionComponent({
         {isShowStartCrafting ? (
           <button
             type="button"
-            className="bg-green-500 px-2 py-1 rounded-2xl"
+            className="bg-success px-2 py-1 rounded-2xl"
             onClick={handleConfirm}
           >
             Start Crafting
@@ -107,7 +106,7 @@ export default function HeadersTypeSelectionComponent({
         ) : (
           <button
             type="button"
-            className="bg-blue-500 px-2 py-1 rounded-2xl"
+            className="bg-primary px-2 py-1 rounded-2xl"
             onClick={validate}
           >
             Validate

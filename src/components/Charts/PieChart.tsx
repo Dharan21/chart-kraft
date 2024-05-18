@@ -54,7 +54,7 @@ export default function PieChartCompnent({ chartOptions }: PieChartProps) {
             name="plot-x"
             id="plot-x"
             onChange={(e) => handleSelectionChange(e, "label")}
-            value={chartOptions.valueColumn ?? ""}
+            value={chartOptions.labelColumn ?? ""}
           >
             <option disabled value="">
               Select

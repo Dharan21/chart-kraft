@@ -15,5 +15,5 @@ export interface PieChartOptions {
   labelColumn: string;
 }
 
-export const availableChartOptions = ["bar", "line", "pie"];
+export const availableChartOptions: ChartType[] = ["bar", "line", "pie"];
 export type ChartType = "line" | "bar" | "pie";
