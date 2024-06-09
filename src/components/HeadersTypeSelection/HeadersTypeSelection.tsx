@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import DialogComponent from "@/components/Dialog/Dialog";
 import { CSVData, SupportedDataType } from "@/models/CSVData";
 import { validateCSVData } from "@/utils/utility-functions";
-import { ImCross } from "react-icons/im";
+import { MdDelete } from "react-icons/md";
 
 interface HeadersTypeSelectionProps {
   isOpen: boolean;
@@ -87,7 +87,7 @@ export default function HeadersTypeSelectionComponent({
                   <option value="string">String</option>
                   <option value="number">Number</option>
                 </select>
-                <ImCross
+                <MdDelete
                   className="cursor-pointer h-full text-danger"
                   onClick={() => handleRemoveColumnClick(header)}
                 />
@@ -95,23 +95,25 @@ export default function HeadersTypeSelectionComponent({
             </div>
           ))}
         </div>
-        {isShowStartCrafting ? (
-          <button
-            type="button"
-            className="bg-success px-2 py-1 rounded-2xl"
-            onClick={handleConfirm}
-          >
-            Start Crafting
-          </button>
-        ) : (
-          <button
-            type="button"
-            className="bg-primary px-2 py-1 rounded-2xl"
-            onClick={validate}
-          >
-            Validate
-          </button>
-        )}
+        <div className="flex">
+          {isShowStartCrafting ? (
+            <button
+              type="button"
+              className="bg-success p-2 font-semibold w-full"
+              onClick={handleConfirm}
+            >
+              Start Crafting
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="bg-primary p-2 font-semibold w-full"
+              onClick={validate}
+            >
+              Validate
+            </button>
+          )}
+        </div>
       </form>
     </DialogComponent>
   );

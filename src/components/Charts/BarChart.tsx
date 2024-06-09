@@ -10,7 +10,7 @@ type BarChartProps = {
 
 export default function BarChartComponent({ chartOptions }: BarChartProps) {
   const csvData = useAppSelector(
-    (state) => state.tabs.data[state.tabs.currentTabIndex].aggregatedData
+    (state) => state.tabs.data[state.tabs.currentTabIndex].inputData
   );
   const [headerNames, setHeaderNames] = useState<string[]>(
     csvData.headers.map((x) => x.name)

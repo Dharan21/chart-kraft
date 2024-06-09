@@ -10,7 +10,7 @@ type PieChartProps = {
 
 export default function PieChartCompnent({ chartOptions }: PieChartProps) {
   const csvData = useAppSelector(
-    (state) => state.tabs.data[state.tabs.currentTabIndex].aggregatedData
+    (state) => state.tabs.data[state.tabs.currentTabIndex].inputData
   );
 
   const [headerNames, setHeaderNames] = useState<string[]>(

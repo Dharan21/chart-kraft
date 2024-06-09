@@ -1,4 +1,4 @@
-import React from "react";
+import React, { PropsWithChildren } from "react";
 
 interface DialogProps {
   isOpen: boolean;
@@ -6,11 +6,11 @@ interface DialogProps {
   children: React.ReactNode;
 }
 
-const DialogComponent: React.FC<DialogProps> = ({
+export default function DialogComponent({
   isOpen,
   onClose,
   children,
-}) => {
+}: PropsWithChildren<DialogProps>) {
   return (
     <>
       {isOpen && (
@@ -30,6 +30,4 @@ const DialogComponent: React.FC<DialogProps> = ({
       )}
     </>
   );
-};
-
-export default DialogComponent;
+}

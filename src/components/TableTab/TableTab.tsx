@@ -1,4 +1,5 @@
 import { useAppSelector } from "@/lib/hooks";
+import { CSVData } from "@/models/CSVData";
 import {
   Table,
   TableBody,
@@ -9,8 +10,11 @@ import {
 } from "@mui/material";
 import React from "react";
 
-export default function TableTabComponent() {
-  const csvData = useAppSelector((state) => state.filters.filteredData);
+type TableTabProps = {
+  csvData: CSVData;
+}
+
+export default function TableTabComponent({ csvData }: TableTabProps) {
 
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);

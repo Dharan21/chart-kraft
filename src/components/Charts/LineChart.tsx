@@ -10,7 +10,7 @@ type LineChartProps = {
 
 export default function LineChartComponent({ chartOptions }: LineChartProps) {
   const csvData = useAppSelector(
-    (state) => state.tabs.data[state.tabs.currentTabIndex].aggregatedData
+    (state) => state.tabs.data[state.tabs.currentTabIndex].inputData
   );
 
   const [numberTypeHeaders, setNumberTypeHeaders] = useState(

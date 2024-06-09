@@ -2,20 +2,29 @@
 
 import CSVReader from "@/components/CSVReader/CSVReader";
 import ChartTabComponent from "@/components/ChartTab/ChartTab";
-import DataFilterComponent from "@/components/DataFilter/DataFilter";
 import React from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
-import { addTab, changeTab, removeTab } from "@/lib/features/tabs/tabsSlice";
+import { addTab, changeTab, removeTab, resetTabs } from "@/lib/features/tabs/tabsSlice";
 import TableTabComponent from "@/components/TableTab/TableTab";
-import { ImCross } from "react-icons/im";
+import TransformationsComponent from "@/components/Transformations/Transformations";
+import { CSVData } from "@/models/CSVData";
+import { MdDelete } from "react-icons/md";
 
 export default function Home() {
-  const filtersData = useAppSelector((state) => state.filters);
   const tabsData = useAppSelector((state) => state.tabs);
   const dispatch = useAppDispatch();
 
+  const [data, setData] = React.useState<CSVData>({
+    rows: [],
+    headers: [],
+  } as CSVData);
+
   const handleTabAdd = () => {
-    dispatch(addTab(filtersData.filteredData ?? { headers: [], rows: [] }));
+    if (!data) {
+      alert("Please upload a file first");
+      return;
+    }
+    dispatch(addTab(data));
   };
 
   const handleCloseTab = (index: number) => {
@@ -26,12 +35,34 @@ export default function Home() {
     dispatch(changeTab(index));
   };
 
+  const handleTransformedData = (data: CSVData) => {
+    if (!!data) {
+      if (tabsData.data.length > 0) {
+        const res = confirm(
+          "This action will reset your current data. Are you sure you want to proceed?"
+        );
+        if (res) {
+          setData(data);
+          dispatch(resetTabs(data));
+        }
+      } else {
+        setData(data);
+      }
+    }
+  };
+
+  const onDataLoad = (data: CSVData) => {
+    setData(data);
+  };
+
+  const isDataAvailable = () => !!data && !!data.rows && data.rows.length > 0;
+
   return (
     <div className="min-h-[100vh]">
       <h1 className="text-2xl font-bold text-center">ChartCraft</h1>
       <div className="flex">
         <div className="w-4/5">
-          {filtersData.filteredData && (
+          {isDataAvailable() && (
             <>
               <div className="flex">
                 <div className="w-1/12">
@@ -69,7 +100,7 @@ export default function Home() {
                       <div className="flex flex-row justify-center align-center gap-2">
                         <div>Tab {index + 1}</div>
                         <div onClick={() => handleCloseTab(index)}>
-                          <ImCross className="h-full text-danger" />
+                          <MdDelete className="h-full" />
                         </div>
                       </div>
                     </button>
@@ -79,15 +110,20 @@ export default function Home() {
               {tabsData.currentTabIndex > -1 ? (
                 <ChartTabComponent />
               ) : (
-                <TableTabComponent />
+                <TableTabComponent csvData={data} />
               )}
             </>
           )}
         </div>
         <div className="w-1/5">
           <div className="flex flex-col">
-            <CSVReader />
-            {filtersData.data && <DataFilterComponent />}
+            <CSVReader onLoad={onDataLoad} />
+            {isDataAvailable() && (
+              <TransformationsComponent
+                csvData={data}
+                handleTransformedData={handleTransformedData}
+              />
+            )}
           </div>
         </div>
       </div>

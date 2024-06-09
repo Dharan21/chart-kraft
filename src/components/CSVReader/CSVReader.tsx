@@ -1,17 +1,16 @@
 import {
   convertCSVDataToSpecficTypes,
   parseCSV,
-  readHeaders,
 } from "@/utils/utility-functions";
 import React, { useState, ChangeEvent, useRef } from "react";
 import HeadersTypeSelectionComponent from "../HeadersTypeSelection/HeadersTypeSelection";
 import { CSVData, SupportedDataType } from "@/models/CSVData";
-import { useAppDispatch } from "@/lib/hooks";
-import { addFileData } from "@/lib/features/filters/filtersSlice";
-import { resetTabs } from "@/lib/features/tabs/tabsSlice";
 
-export default function CSVReader() {
-  const dispatch = useAppDispatch();
+type CSVReaderProps = {
+  onLoad: (data: CSVData) => void;
+};
+
+export default function CSVReader({ onLoad }: CSVReaderProps) {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [error, setError] = useState<string>("");
@@ -46,8 +45,7 @@ export default function CSVReader() {
     datatypes: { header: string; dataType: SupportedDataType }[]
   ) => {
     const data = convertCSVDataToSpecficTypes(csvData, datatypes);
-    dispatch(addFileData(data));
-    dispatch(resetTabs(data));
+    onLoad(data);
   };
 
   const handleHeaderTypeSelectOnClose = () => {

@@ -9,19 +9,17 @@ import {
 } from "@/models/ChartOptions";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { updateTabData } from "@/lib/features/tabs/tabsSlice";
-import DataAggregationComponent from "../DataAggregation/DataAggregation";
 import LineChartComponent from "../Charts/LineChart";
 import PieChartCompnent from "../Charts/PieChart";
 
 export default function ChartTabComponent() {
-  const csvData = useAppSelector((state) => state.filters.filteredData);
   const currentTabIndex = useAppSelector((state) => state.tabs.currentTabIndex);
   const tabsData = useAppSelector((state) => state.tabs.data);
   const tabData = tabsData[currentTabIndex];
 
   const dispatch = useAppDispatch();
 
-  if (!csvData || !tabData) {
+  if (!tabData) {
     return <></>;
   }
 
@@ -60,7 +58,6 @@ export default function ChartTabComponent() {
           </div>
         </div>
         <div className="flex flex-col w-11/12">
-          <DataAggregationComponent />
           {tabData.chartType === "bar" && (
             <BarChartComponent
               chartOptions={tabData.chartOptions as BarChartOptions}
