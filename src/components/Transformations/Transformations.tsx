@@ -62,23 +62,25 @@ export default function TransformationsComponent({
   };
 
   const handleDeleteTransformation = (index: number) => {
+    if (transformations.length == 1) {
+      return;
+    }
+    const res = confirm(
+      "You will lose all transformations after this. Are you sure?"
+    );
+    if (!res) return;
     setTransformations((prev) => {
-      const newTransformations = [...prev];
-      newTransformations.splice(index, 1);
+      let newTransformations = [...prev];
+      newTransformations.splice(index);
       if (index == 0) {
-        newTransformations[0].inputData = csvData;
-      } else {
-        newTransformations[index].inputData =
-          newTransformations[index - 1].outputData;
+        newTransformations = [{ inputData: csvData } as Transformation];
       }
-      // apply transformations and reset input and output data accordingly
       return newTransformations;
     });
   };
 
   const handleTransformationDialogClose = (data?: Transformation) => {
     if (!!data && !!(data as Transformation)?.outputData) {
-      console.log(data);
       setTransformations((prev) => {
         const newTransformations = [...prev];
         newTransformations[selectedIndex] = data;
@@ -117,6 +119,7 @@ export default function TransformationsComponent({
 
   const handleResetTransformationsClick = () => {
     setTransformations([{ inputData: csvData } as Transformation]);
+    handleTransformedData(csvData);
   };
 
   return (
@@ -131,6 +134,7 @@ export default function TransformationsComponent({
         <TransformationBoxComponent
           key={index}
           isDisplayPrevAdd={index == 0}
+          isDisplayNextAdd={index == transformations.length - 1}
           isDeleteDisabled={transformations.length == 1 && index == 0}
           handlePrevAdd={() => addTransformation(index)}
           handleNextAdd={() => addTransformation(index + 1)}
@@ -162,13 +166,13 @@ export default function TransformationsComponent({
         </TransformationBoxComponent>
       ))}
       <button
-        className="bg-primary p-2 font-semibold mt-6 rounded-2xl"
+        className="bg-primary p-2 font-semibold mt-6"
         onClick={handleApplyTransformationsClick}
       >
         Apply Transformations
       </button>
       <button
-        className="bg-danger p-2 font-semibold mt-6 rounded-2xl"
+        className="bg-danger p-2 font-semibold mt-2"
         onClick={handleResetTransformationsClick}
       >
         Reset Transformations

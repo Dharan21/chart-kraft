@@ -4,7 +4,12 @@ import CSVReader from "@/components/CSVReader/CSVReader";
 import ChartTabComponent from "@/components/ChartTab/ChartTab";
 import React from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
-import { addTab, changeTab, removeTab, resetTabs } from "@/lib/features/tabs/tabsSlice";
+import {
+  addTab,
+  changeTab,
+  removeTab,
+  resetTabs,
+} from "@/lib/features/tabs/tabsSlice";
 import TableTabComponent from "@/components/TableTab/TableTab";
 import TransformationsComponent from "@/components/Transformations/Transformations";
 import { CSVData } from "@/models/CSVData";
@@ -69,7 +74,7 @@ export default function Home() {
                   <button
                     onClick={handleTabAdd}
                     type="button"
-                    className="bg-primary p-2 rounded-md"
+                    className="bg-primary p-2"
                   >
                     Add Tab
                   </button>
