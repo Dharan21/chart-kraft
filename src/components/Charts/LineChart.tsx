@@ -1,5 +1,6 @@
 import { updateChartOptions } from "@/lib/features/tabs/tabsSlice";
 import { useAppSelector, useAppDispatch } from "@/lib/hooks";
+import { SupportedDataType } from "@/models/CSVData";
 import { LineChartOptions } from "@/models/ChartOptions";
 import { LineChart } from "@mui/x-charts";
 import { useState, useEffect } from "react";
@@ -14,10 +15,12 @@ export default function LineChartComponent({ chartOptions }: LineChartProps) {
   );
 
   const [numberTypeHeaders, setNumberTypeHeaders] = useState(
-    csvData.headers.filter((x) => x.type === "number")
+    csvData.headers.filter((x) => x.type === SupportedDataType.Number)
   );
   const [headerNames, setHeaderNames] = useState<string[]>(
-    csvData.headers.filter((x) => x.type === "number").map((x) => x.name)
+    csvData.headers
+      .filter((x) => x.type === SupportedDataType.Number)
+      .map((x) => x.name)
   );
 
   const [plotYOptions, setPlotYOptions] = useState(numberTypeHeaders);
@@ -28,7 +31,7 @@ export default function LineChartComponent({ chartOptions }: LineChartProps) {
   useEffect(() => {
     if (!csvData) return;
     const numberTypeHeaders = csvData.headers.filter(
-      (x) => x.type === "number"
+      (x) => x.type === SupportedDataType.Number
     );
     const headerNames = numberTypeHeaders.map((x) => x.name);
     setHeaderNames(headerNames);

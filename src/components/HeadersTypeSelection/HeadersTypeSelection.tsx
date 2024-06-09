@@ -59,7 +59,7 @@ export default function HeadersTypeSelectionComponent({
     onClose();
     const selectedDataTypesArray = headersToShow.map((header) => ({
       header,
-      dataType: selectedDataTypes[header] || "string",
+      dataType: selectedDataTypes[header] || SupportedDataType.String,
     }));
     onDataTypeSelect(selectedDataTypesArray);
   };
@@ -75,7 +75,7 @@ export default function HeadersTypeSelectionComponent({
               <div className="flex gap-3">
                 <select
                   id={header}
-                  value={selectedDataTypes[header] || "string"}
+                  value={selectedDataTypes[header] || SupportedDataType.String}
                   onChange={(e) =>
                     handleDataTypeSelect(
                       header,
@@ -84,8 +84,11 @@ export default function HeadersTypeSelectionComponent({
                   }
                 >
                   <option value="">Select Data Type</option>
-                  <option value="string">String</option>
-                  <option value="number">Number</option>
+                  {Object.values(SupportedDataType).map((dataType, index) => (
+                    <option key={index} value={dataType}>
+                      {dataType}
+                    </option>
+                  ))}
                 </select>
                 <MdDelete
                   className="cursor-pointer h-full text-danger"

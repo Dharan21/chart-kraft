@@ -1,5 +1,5 @@
 import { CSVData } from "./CSVData";
-import { FilterOptions } from "./FilterOptions";
+import { FilterOption } from "./FilterOptions";
 import { AggregateOption as AggregateOption } from "./GroupByOptions";
 
 export interface Transformation {
@@ -32,14 +32,14 @@ export interface GroupTransformation extends Transformation {
 }
 
 export enum FilterType {
-  relative = "relative",
-  absolute = "absolute",
+  Relative = "relative",
+  Absolute = "absolute",
 }
 
 export interface FilterData {
   type: FilterType;
   column: string;
-  operator: FilterOptions;
+  operator: FilterOption;
   value: string;
 }
 

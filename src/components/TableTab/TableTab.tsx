@@ -1,5 +1,4 @@
-import { useAppSelector } from "@/lib/hooks";
-import { CSVData } from "@/models/CSVData";
+import { CSVData, SupportedDataType } from "@/models/CSVData";
 import {
   Table,
   TableBody,
@@ -8,14 +7,14 @@ import {
   TablePagination,
   TableRow,
 } from "@mui/material";
+import { format } from "date-fns";
 import React from "react";
 
 type TableTabProps = {
   csvData: CSVData;
-}
+};
 
 export default function TableTabComponent({ csvData }: TableTabProps) {
-
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const visibleRows = React.useMemo(
@@ -26,12 +25,16 @@ export default function TableTabComponent({ csvData }: TableTabProps) {
       ),
     [page, rowsPerPage, csvData]
   );
+  const headerTypes = csvData.headers.reduce((acc, header) => {
+    acc[header.name] = header.type;
+    return acc;
+  }, {} as any);
 
   if (!csvData) {
     return <></>;
   }
 
-  const handleChangePage = (event: unknown, newPage: number) => {
+  const handleChangePage = (_: any, newPage: number) => {
     setPage(newPage);
   };
 
@@ -63,7 +66,15 @@ export default function TableTabComponent({ csvData }: TableTabProps) {
               sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
             >
               {Object.entries(row).map(([key, value]) => (
-                <TableCell key={key}>{value}</TableCell>
+                <TableCell key={key}>
+                  {headerTypes[key] === SupportedDataType.Date &&
+                    format(value as string, "yyyy-MM-dd")}
+                  {headerTypes[key] === SupportedDataType.String &&
+                    (value as string)}
+                  {headerTypes[key] === SupportedDataType.Number &&
+                    !!value &&
+                    (value as number).toFixed(2)}
+                </TableCell>
               ))}
             </TableRow>
           ))}

@@ -1,6 +1,10 @@
-export type CSVRow = { [key: string]: string | number | null };
+export type CSVRow = { [key: string]: string | number | Date | null };
 export type CSVData = { headers: Header[]; rows: CSVRow[] };
 
 export type Header = { name: string; type: SupportedDataType };
 
-export type SupportedDataType = "string" | "number";
+export enum SupportedDataType {
+  String = "String",
+  Number = "Number",
+  Date = "Date",
+}

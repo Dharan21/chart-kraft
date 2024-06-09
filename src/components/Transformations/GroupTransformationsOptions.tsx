@@ -1,4 +1,4 @@
-import { Header } from "@/models/CSVData";
+import { Header, SupportedDataType } from "@/models/CSVData";
 import { AggregateOption } from "@/models/GroupByOptions";
 import { AggregateData, GroupData } from "@/models/Transformation";
 import { ChangeEvent, useEffect, useState } from "react";
@@ -117,7 +117,7 @@ export default function GroupTransformationsOptionsComponent({
     if (!groupDataCopy) return [];
     return headers.filter(
       (header) =>
-        header.type === "number" &&
+        header.type === SupportedDataType.Number &&
         !groupDataCopy.columns.includes(header.name) &&
         !groupDataCopy.aggregateData
           .filter((_, i) => i !== index)

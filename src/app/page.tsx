@@ -58,6 +58,7 @@ export default function Home() {
 
   const onDataLoad = (data: CSVData) => {
     setData(data);
+    dispatch(resetTabs(data));
   };
 
   const isDataAvailable = () => !!data && !!data.rows && data.rows.length > 0;
@@ -65,8 +66,8 @@ export default function Home() {
   return (
     <div className="min-h-[100vh]">
       <h1 className="text-2xl font-bold text-center">ChartCraft</h1>
-      <div className="flex">
-        <div className="w-4/5">
+      <div className="flex gap-2 m-2">
+        <div className="w-4/5 overflow-x-auto">
           {isDataAvailable() && (
             <>
               <div className="flex">

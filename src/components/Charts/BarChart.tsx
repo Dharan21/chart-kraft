@@ -1,5 +1,6 @@
 import { updateChartOptions } from "@/lib/features/tabs/tabsSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { SupportedDataType } from "@/models/CSVData";
 import { BarChartOptions } from "@/models/ChartOptions";
 import { BarChart } from "@mui/x-charts";
 import { useEffect, useState } from "react";
@@ -16,7 +17,7 @@ export default function BarChartComponent({ chartOptions }: BarChartProps) {
     csvData.headers.map((x) => x.name)
   );
   const [numberTypeHeaders, setNumberTypeHeaders] = useState(
-    csvData.headers.filter((x) => x.type === "number")
+    csvData.headers.filter((x) => x.type === SupportedDataType.Number)
   );
 
   const [plotYOptions, setPlotYOptions] = useState(numberTypeHeaders);
@@ -28,7 +29,7 @@ export default function BarChartComponent({ chartOptions }: BarChartProps) {
     if (!csvData) return;
     const headerNames = csvData.headers.map((x) => x.name);
     const numberTypeHeaders = csvData.headers.filter(
-      (x) => x.type === "number"
+      (x) => x.type === SupportedDataType.Number
     );
     setHeaderNames(headerNames);
     setNumberTypeHeaders(numberTypeHeaders);
@@ -67,6 +68,13 @@ export default function BarChartComponent({ chartOptions }: BarChartProps) {
       plotY: chartOptions.plotY,
     });
     setPlotYOptions(numberTypeHeaders.filter((x) => x.name !== e.target.value));
+  };
+
+  const valueFormatter = (value: any) => {
+    if (!isNaN(Date.parse(value))) {
+      return value.toDateString();
+    }
+    return value;
   };
 
   return (
@@ -116,7 +124,13 @@ export default function BarChartComponent({ chartOptions }: BarChartProps) {
           <BarChart
             height={400}
             dataset={csvData.rows}
-            xAxis={[{ scaleType: "band", dataKey: chartOptions.plotX }]}
+            xAxis={[
+              {
+                scaleType: "band",
+                dataKey: chartOptions.plotX,
+                valueFormatter,
+              },
+            ]}
             series={chartOptions.plotY.map((x) => ({ dataKey: x, label: x }))}
           />
         )}

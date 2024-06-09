@@ -1,6 +1,16 @@
 import { CSVData, CSVRow, SupportedDataType } from "@/models/CSVData";
+import {
+  DateFilterOption,
+  NumberFilterOption,
+  StringFilterOption,
+} from "@/models/FilterOptions";
 import { AggregateOption } from "@/models/GroupByOptions";
-import { FilterData, GroupData, SortData } from "@/models/Transformation";
+import {
+  FilterData,
+  FilterType,
+  GroupData,
+  SortData,
+} from "@/models/Transformation";
 
 export function readHeaders(csvString: string): string[] {
   return csvString
@@ -24,7 +34,7 @@ export function parseCSV(csvString: string): CSVData {
       return rowData;
     });
   return {
-    headers: header.map((h) => ({ name: h, type: "string" })),
+    headers: header.map((h) => ({ name: h, type: SupportedDataType.String })),
     rows: data,
   };
 }
@@ -43,7 +53,15 @@ export function validateCSVData(
         if (value.toLowerCase() == "null") {
           value = null;
         }
-        if (dataType === "number" && isNaN(parseFloat(value as string))) {
+        if (
+          dataType === SupportedDataType.Number &&
+          isNaN(parseFloat(value as string))
+        ) {
+          errorLines.push(index + 1);
+        } else if (
+          dataType === SupportedDataType.Date &&
+          isNaN(Date.parse(value as string))
+        ) {
           errorLines.push(index + 1);
         }
       }
@@ -71,10 +89,14 @@ export function convertCSVDataToSpecficTypes(
           if (value.toLowerCase() == "null") {
             value = null;
           }
-          if (headerType.dataType === "number") {
+          if (headerType.dataType === SupportedDataType.Number) {
             newRow[header] = !!value ? parseFloat(value as string) : null;
-          } else if (headerType.dataType === "string") {
+          } else if (headerType.dataType === SupportedDataType.String) {
             newRow[header] = value;
+          } else if (headerType.dataType === SupportedDataType.Date) {
+            newRow[header] = !!value
+              ? new Date(value as string).toISOString()
+              : null;
           }
         }
       });
@@ -92,45 +114,66 @@ export function applyFilterTransform(
   const filteredRows = inputData.rows.filter((row, index) => {
     let cellValue = row[column];
     let compareValue: any = value.trim();
-    if (type == "relative") {
+    if (type == FilterType.Relative) {
       compareValue = row[compareValue];
     }
 
     switch (columnType) {
-      case "number":
+      case SupportedDataType.Number:
         compareValue = parseFloat(compareValue);
         cellValue = cellValue as number;
         switch (operator) {
-          case "greater":
+          case NumberFilterOption.GreaterThan:
             return cellValue > compareValue;
-          case "lesser":
+          case NumberFilterOption.GreaterThanOrEqual:
+            return cellValue >= compareValue;
+          case NumberFilterOption.LesserThan:
             return cellValue < compareValue;
-          case "equal":
+          case NumberFilterOption.LesserThanOrEqual:
+            return cellValue <= compareValue;
+          case NumberFilterOption.Equal:
             return cellValue === compareValue;
+          case NumberFilterOption.NotEqual:
+            return cellValue !== compareValue;
           default:
             return false;
         }
         break;
-      case "string":
+      case SupportedDataType.String:
         cellValue = cellValue as string;
         compareValue = compareValue as string;
         switch (operator) {
-          case "contains":
+          case StringFilterOption.Contains:
             return cellValue.includes(compareValue);
-          case "equal":
+          case StringFilterOption.Equal:
             return cellValue === compareValue;
-          case "endsWith":
+          case StringFilterOption.EndsWith:
             return cellValue.endsWith(compareValue);
-          case "notContains":
+          case StringFilterOption.NotContains:
             return !cellValue.includes(compareValue);
-          case "notEqual":
+          case StringFilterOption.NotEqual:
             return cellValue !== compareValue;
-          case "startsWith":
+          case StringFilterOption.StartsWith:
             return cellValue.startsWith(compareValue);
           default:
             return false;
         }
         break;
+      case SupportedDataType.Date:
+        cellValue = new Date(cellValue as string);
+        compareValue = new Date(compareValue);
+        switch (operator) {
+          case DateFilterOption.Before:
+            return cellValue < compareValue;
+          case DateFilterOption.After:
+            return cellValue > compareValue;
+          case DateFilterOption.On:
+            return cellValue.toDateString() === compareValue.toDateString();
+          case DateFilterOption.NotOn:
+            return cellValue.toDateString() !== compareValue.toDateString();
+          default:
+            return false;
+        }
       default:
     }
   });

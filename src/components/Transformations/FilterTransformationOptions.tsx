@@ -1,11 +1,12 @@
 "use client";
 
-import { Header } from "@/models/CSVData";
+import { Header, SupportedDataType } from "@/models/CSVData";
 import {
-  numberFilterOptions,
-  stringFilterOptions,
+  DateFilterOption,
+  NumberFilterOption,
+  StringFilterOption,
 } from "@/models/FilterOptions";
-import { FilterData } from "@/models/Transformation";
+import { FilterData, FilterType } from "@/models/Transformation";
 import { ChangeEvent, useEffect, useState } from "react";
 
 type FilterTransformationOptionsProps = {
@@ -26,11 +27,14 @@ export default function FilterTransformationOptionsComponent({
   useEffect(() => {
     if (!!filterData) {
       setFilterDataCopy(JSON.parse(JSON.stringify(filterData)));
+      setSelectedColumnDataType(
+        headers.find((header) => header.name === filterData.column)?.type ?? ""
+      );
     }
     setFilterDataCopy((prev) => {
       if (!!prev) return prev;
       return {
-        type: "absolute",
+        type: FilterType.Absolute,
       } as FilterData;
     });
   }, [filterData]);
@@ -92,7 +96,7 @@ export default function FilterTransformationOptionsComponent({
     }
 
     if (
-      filterDataCopy?.type === "relative" &&
+      filterDataCopy?.type === FilterType.Relative &&
       !headers.find((header) => header.name === filterDataCopy?.value)
     ) {
       alert("Invalid column selected");
@@ -102,10 +106,24 @@ export default function FilterTransformationOptionsComponent({
     const filterColumn = headers.find(
       (header) => header.name == filterDataCopy?.column
     );
-    if (filterColumn?.type == "number" && filterDataCopy?.type == "absolute") {
+    if (
+      filterColumn?.type == SupportedDataType.Number &&
+      filterDataCopy?.type == FilterType.Absolute
+    ) {
       const value = parseFloat(filterDataCopy?.value);
       if (isNaN(value)) {
         alert("Invalid number entered");
+        return false;
+      }
+    }
+
+    if (
+      filterColumn?.type == SupportedDataType.Date &&
+      filterDataCopy.type == FilterType.Absolute
+    ) {
+      const date = new Date(filterDataCopy?.value);
+      if (isNaN(date.getTime())) {
+        alert("Invalid date entered");
         return false;
       }
     }
@@ -140,14 +158,20 @@ export default function FilterTransformationOptionsComponent({
           onChange={handleFilterDataChange}
         >
           <option value="">Select Operator</option>
-          {selectedColumnDataType === "string" &&
-            stringFilterOptions.map((option, i) => (
+          {selectedColumnDataType === SupportedDataType.String &&
+            Object.values(StringFilterOption).map((option, i) => (
               <option key={i} value={option}>
                 {option}
               </option>
             ))}
-          {selectedColumnDataType === "number" &&
-            numberFilterOptions.map((option, i) => (
+          {selectedColumnDataType === SupportedDataType.Number &&
+            Object.values(NumberFilterOption).map((option, i) => (
+              <option key={i} value={option}>
+                {option}
+              </option>
+            ))}
+          {selectedColumnDataType === SupportedDataType.Date &&
+            Object.values(DateFilterOption).map((option, i) => (
               <option key={i} value={option}>
                 {option}
               </option>
@@ -156,26 +180,31 @@ export default function FilterTransformationOptionsComponent({
         <div className="flex items-center gap-2">
           <div>
             <select
-              value={filterDataCopy?.type ?? "absolute"}
+              value={filterDataCopy?.type ?? FilterType.Absolute}
               name="type"
               onChange={handleFilterDataChange}
             >
-              <option value="absolute">Select Value</option>
-              <option value="relative">Select Column</option>
+              {Object.values(FilterType).map((option, i) => (
+                <option value={option} key={i}>
+                  {option == FilterType.Absolute
+                    ? "Select Value"
+                    : "Select Column"}
+                </option>
+              ))}
             </select>
           </div>
           <div>
-            {filterDataCopy?.type === "absolute" && (
+            {filterDataCopy?.type === FilterType.Absolute && (
               <input
                 className="px-2"
-                type="text"
+                type={`${selectedColumnDataType == SupportedDataType.Date ? 'date' : 'text'}`}
                 value={filterDataCopy?.value ?? ""}
                 placeholder="Enter Value"
                 name="value"
                 onChange={handleFilterDataChange}
               />
             )}
-            {filterDataCopy?.type === "relative" && (
+            {filterDataCopy?.type === FilterType.Relative && (
               <select
                 value={filterDataCopy?.value ?? ""}
                 name="value"

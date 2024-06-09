@@ -1,5 +1,6 @@
 import { updateChartOptions } from "@/lib/features/tabs/tabsSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { SupportedDataType } from "@/models/CSVData";
 import { PieChartOptions } from "@/models/ChartOptions";
 import { PieChart } from "@mui/x-charts";
 import { useEffect, useState } from "react";
@@ -17,7 +18,7 @@ export default function PieChartCompnent({ chartOptions }: PieChartProps) {
     csvData.headers.map((x) => x.name)
   );
   const [numberTypeHeaders, setNumberTypeHeaders] = useState(
-    csvData.headers.filter((x) => x.type === "number")
+    csvData.headers.filter((x) => x.type === SupportedDataType.Number)
   );
 
   const dispatch = useAppDispatch();
@@ -25,7 +26,9 @@ export default function PieChartCompnent({ chartOptions }: PieChartProps) {
   useEffect(() => {
     if (!csvData) return;
     setHeaderNames(csvData.headers.map((x) => x.name));
-    setNumberTypeHeaders(csvData.headers.filter((x) => x.type === "number"));
+    setNumberTypeHeaders(
+      csvData.headers.filter((x) => x.type === SupportedDataType.Number)
+    );
   }, [csvData]);
 
   const handleChartOptionsChange = (chartOptions: PieChartOptions) => {
@@ -98,7 +101,6 @@ export default function PieChartCompnent({ chartOptions }: PieChartProps) {
                 })),
             },
           ]}
-          
         />
       )}
     </>

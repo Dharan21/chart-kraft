@@ -1,36 +1,26 @@
-import { SupportedDataType } from "./CSVData";
+export enum StringFilterOption {
+  Equal = "equal",
+  NotEqual = "notEqual",
+  Contains = "contains",
+  NotContains = "not contains",
+  StartsWith = "starts with",
+  EndsWith = "ends with",
+}
 
-export type FilterRow = {
-  header: string;
-  dataType: SupportedDataType | "";
-  type: FilterOptions | "";
-  value: string;
-};
+export enum NumberFilterOption {
+  GreaterThan = "greater than",
+  GreaterThanOrEqual = "greater than or equals",
+  LesserThan = "lesser than",
+  LesserThanOrEqual = "lesser than or equals",
+  Equal = "equal",
+  NotEqual = "not equal",
+}
 
-type StringFilterOptions =
-  | "equal"
-  | "notEqual"
-  | "contains"
-  | "notContains"
-  | "startsWith"
-  | "endsWith";
+export enum DateFilterOption {
+  Before = "before",
+  After = "after",
+  On = "on",
+  NotOn = "not on",
+}
 
-type NumberFilterOptions = "greater" | "lesser" | "equal" | "notEqual";
-
-export const stringFilterOptions: StringFilterOptions[] = [
-  "equal",
-  "notEqual",
-  "contains",
-  "notContains",
-  "startsWith",
-  "endsWith",
-];
-
-export const numberFilterOptions: NumberFilterOptions[] = [
-  "greater",
-  "lesser",
-  "equal",
-  "notEqual",
-];
-
-export type FilterOptions = StringFilterOptions | NumberFilterOptions;
+export type FilterOption = StringFilterOption | NumberFilterOption | DateFilterOption;
