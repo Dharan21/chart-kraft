@@ -16,19 +16,25 @@ import {
   GroupTransformationTextComponent,
   SortTransformationTextComponent,
 } from "./TransformationText";
+import { useAppSelector } from "@/lib/hooks";
+import { useDispatch } from "react-redux";
+import { updateTabTransformations } from "@/lib/features/tabs/tabsSlice";
 
 type TransformationsProps = {
   csvData: CSVData;
   handleTransformedData: (data: CSVData) => void;
 };
 
-export default function  TransformationsComponent({
+export default function TabTransformationsComponent({
   csvData,
   handleTransformedData,
 }: TransformationsProps) {
-  const [transformations, setTransformations] = useState<Transformation[]>([
-    { inputData: csvData } as Transformation,
-  ]);
+  const currentTabIndex = useAppSelector((state) => state.tabs.currentTabIndex);
+  const tabsData = useAppSelector((state) => state.tabs.data);
+  const tabData = tabsData[currentTabIndex];
+  const transformations = tabData.transformations;
+  const dispatch = useDispatch();
+
   const [selectedIndex, setSelectedIndex] = useState<number>(-1);
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
@@ -37,23 +43,20 @@ export default function  TransformationsComponent({
       alert("Complete the previous transformations first");
       return;
     }
-    setTransformations((prev) => {
-      const newTransformations = [...prev];
-      if (index >= 0 && index < newTransformations.length) {
-        const inputCsvData =
-          index == 0 ? csvData : newTransformations[index - 1].outputData;
-        newTransformations.splice(index, 0, {
-          inputData: inputCsvData,
-        } as Transformation);
-      } else {
-        newTransformations.push({
-          inputData:
-            newTransformations[newTransformations.length - 1].outputData,
-        } as Transformation);
-      }
+    const newTransformations: Transformation[] = [...transformations];
+    if (index >= 0 && index < newTransformations.length) {
+      const inputCsvData =
+        index == 0 ? csvData : newTransformations[index - 1].outputData;
+      newTransformations.splice(index, 0, {
+        inputData: inputCsvData,
+      } as Transformation);
+    } else {
+      newTransformations.push({
+        inputData: newTransformations[newTransformations.length - 1].outputData,
+      } as Transformation);
+    }
 
-      return newTransformations;
-    });
+    dispatch(updateTabTransformations(newTransformations));
   };
 
   const handleEditTransformation = (index: number) => {
@@ -69,23 +72,19 @@ export default function  TransformationsComponent({
       "You will lose all transformations after this. Are you sure?"
     );
     if (!res) return;
-    setTransformations((prev) => {
-      let newTransformations = [...prev];
-      newTransformations.splice(index);
-      if (index == 0) {
-        newTransformations = [{ inputData: csvData } as Transformation];
-      }
-      return newTransformations;
-    });
+    let newTransformations = [...transformations];
+    newTransformations.splice(index);
+    if (index == 0) {
+      newTransformations = [{ inputData: csvData } as Transformation];
+    }
+    dispatch(updateTabTransformations(newTransformations));
   };
 
   const handleTransformationDialogClose = (data?: Transformation) => {
     if (!!data && !!(data as Transformation)?.outputData) {
-      setTransformations((prev) => {
-        const newTransformations = [...prev];
-        newTransformations[selectedIndex] = data;
-        return newTransformations;
-      });
+      const newTransformations = [...transformations];
+      newTransformations[selectedIndex] = data;
+      dispatch(updateTabTransformations(newTransformations));
     }
 
     setIsDialogOpen(false);
@@ -118,7 +117,9 @@ export default function  TransformationsComponent({
   };
 
   const handleResetTransformationsClick = () => {
-    setTransformations([{ inputData: csvData } as Transformation]);
+    dispatch(
+      updateTabTransformations([{ inputData: csvData } as Transformation])
+    );
     handleTransformedData(csvData);
   };
 
@@ -165,18 +166,20 @@ export default function  TransformationsComponent({
           )}
         </TransformationBoxComponent>
       ))}
-      <button
-        className="bg-primary p-2 font-semibold mt-6"
-        onClick={handleApplyTransformationsClick}
-      >
-        Apply Transformations
-      </button>
-      <button
-        className="bg-danger p-2 font-semibold mt-2"
-        onClick={handleResetTransformationsClick}
-      >
-        Reset Transformations
-      </button>
+      <div className=" flex flex-col items-center">
+        <button
+          className="bg-primary p-2 font-semibold mt-6"
+          onClick={handleApplyTransformationsClick}
+        >
+          Apply Transformations
+        </button>
+        <button
+          className="bg-danger p-2 font-semibold mt-2"
+          onClick={handleResetTransformationsClick}
+        >
+          Reset Transformations
+        </button>
+      </div>
     </>
   );
 }

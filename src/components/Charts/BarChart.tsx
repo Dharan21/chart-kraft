@@ -3,6 +3,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { SupportedDataType } from "@/models/CSVData";
 import { BarChartOptions } from "@/models/ChartOptions";
 import { BarChart } from "@mui/x-charts";
+import { isDate } from "date-fns";
 import { useEffect, useState } from "react";
 
 type BarChartProps = {
@@ -11,7 +12,7 @@ type BarChartProps = {
 
 export default function BarChartComponent({ chartOptions }: BarChartProps) {
   const csvData = useAppSelector(
-    (state) => state.tabs.data[state.tabs.currentTabIndex].inputData
+    (state) => state.tabs.data[state.tabs.currentTabIndex].transformedData
   );
   const [headerNames, setHeaderNames] = useState<string[]>(
     csvData.headers.map((x) => x.name)
@@ -71,10 +72,10 @@ export default function BarChartComponent({ chartOptions }: BarChartProps) {
   };
 
   const valueFormatter = (value: any) => {
-    if (!isNaN(Date.parse(value))) {
+    if (isDate(value)) {
       return value.toDateString();
     }
-    return value;
+    return value.toString();
   };
 
   return (

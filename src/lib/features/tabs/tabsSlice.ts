@@ -2,6 +2,7 @@ import { CSVData } from "@/models/CSVData";
 import { ChartOptions } from "@/models/ChartOptions";
 import { AggregateOption, GroupByOption } from "@/models/GroupByOptions";
 import { TabData } from "@/models/TabData";
+import { Transformation } from "@/models/Transformation";
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
 export interface TabsState {
@@ -13,6 +14,8 @@ const newEmptyTabData = (data: CSVData): TabData => ({
   chartType: "bar",
   chartOptions: {} as ChartOptions,
   inputData: data,
+  transformedData: data,
+  transformations: [{ inputData: data } as Transformation],
 });
 
 const initialState: TabsState = {
@@ -44,6 +47,12 @@ export const TabsSlice = createSlice({
       const { index, updatedTabData } = action.payload;
       state.data[index] = updatedTabData;
     },
+    updateTabTransformations: (
+      state,
+      action: PayloadAction<Transformation[]>
+    ) => {
+      state.data[state.currentTabIndex].transformations = action.payload;
+    },
     updateChartOptions: (state, action: PayloadAction<ChartOptions>) => {
       state.data[state.currentTabIndex].chartOptions = action.payload;
     },
@@ -54,11 +63,11 @@ export const TabsSlice = createSlice({
   },
 });
 
-
 export const {
   addTab,
   removeTab,
   updateTabData,
+  updateTabTransformations,
   changeTab,
   resetTabs,
   updateChartOptions,

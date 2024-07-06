@@ -11,6 +11,9 @@ import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { updateTabData } from "@/lib/features/tabs/tabsSlice";
 import LineChartComponent from "../Charts/LineChart";
 import PieChartCompnent from "../Charts/PieChart";
+import TransformationsComponent from "../Transformations/Transformations";
+import { CSVData } from "@/models/CSVData";
+import TabTransformationsComponent from "../Transformations/TabTransformation";
 
 export default function ChartTabComponent() {
   const currentTabIndex = useAppSelector((state) => state.tabs.currentTabIndex);
@@ -22,6 +25,14 @@ export default function ChartTabComponent() {
   if (!tabData) {
     return <></>;
   }
+
+  const handleTransformedData = (data: CSVData) => {
+    const newTabData = {
+      ...tabData,
+      transformedData: data,
+    } as TabData;
+    handleTabDataChange(newTabData);
+  };
 
   const handleTabDataChange = (updatedTabData: TabData) => {
     dispatch(updateTabData({ index: currentTabIndex, updatedTabData }));
@@ -38,10 +49,10 @@ export default function ChartTabComponent() {
   return (
     <>
       <div className="flex">
-        <div className="w-1/12">
-          <div className="flex flex-col">
-            <div className="p-2">Chart Types</div>
-            <div className="p-2">
+        <div className="w-1/6">
+          <div className="flex flex-col gap-2">
+            <div>Chart Types</div>
+            <div>
               <select
                 name="chart-type"
                 id=""
@@ -55,9 +66,15 @@ export default function ChartTabComponent() {
                 ))}
               </select>
             </div>
+            <div>
+              <TabTransformationsComponent
+                csvData={tabData.inputData}
+                handleTransformedData={handleTransformedData}
+              />
+            </div>
           </div>
         </div>
-        <div className="flex flex-col w-11/12">
+        <div className="flex flex-col w-5/6">
           {tabData.chartType === "bar" && (
             <BarChartComponent
               chartOptions={tabData.chartOptions as BarChartOptions}

@@ -11,7 +11,7 @@ type PieChartProps = {
 
 export default function PieChartCompnent({ chartOptions }: PieChartProps) {
   const csvData = useAppSelector(
-    (state) => state.tabs.data[state.tabs.currentTabIndex].inputData
+    (state) => state.tabs.data[state.tabs.currentTabIndex].transformedData
   );
 
   const [headerNames, setHeaderNames] = useState<string[]>(
