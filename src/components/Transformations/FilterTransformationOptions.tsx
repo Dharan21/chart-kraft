@@ -8,6 +8,15 @@ import {
 } from "@/models/FilterOptions";
 import { FilterData, FilterType } from "@/models/Transformation";
 import { ChangeEvent, useEffect, useState } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
 
 type FilterTransformationOptionsProps = {
   filterData: FilterData;
@@ -39,25 +48,21 @@ export default function FilterTransformationOptionsComponent({
     });
   }, [filterData]);
 
-  const hanldleFilterColumnChange = (
-    e: React.ChangeEvent<HTMLSelectElement>
-  ) => {
+  const hanldleFilterColumnChange = (value: string) => {
     setFilterDataCopy((prev) => {
       if (prev) {
         return {
           ...prev,
-          column: e.target.value,
+          column: value,
         };
       } else {
         return {
-          column: e.target.value,
+          column: value,
         } as FilterData;
       }
     });
 
-    const selectedColumn = headers.find(
-      (header) => header.name === e.target.value
-    );
+    const selectedColumn = headers.find((header) => header.name === value);
     if (selectedColumn) {
       if (selectedColumn?.type !== selectedColumnDataType) {
         setSelectedColumnDataType(selectedColumn.type);
@@ -72,14 +77,12 @@ export default function FilterTransformationOptionsComponent({
     }
   };
 
-  const handleFilterDataChange = (
-    e: ChangeEvent<HTMLSelectElement | HTMLInputElement>
-  ) => {
+  const handleFilterDataChange = (key: string, value: string) => {
     setFilterDataCopy(
       (prev) =>
         ({
           ...prev,
-          [e.target.name]: e.target.value,
+          [key]: value,
         } as FilterData)
     );
   };
@@ -139,96 +142,113 @@ export default function FilterTransformationOptionsComponent({
 
   return (
     <>
+      <div className="font-semibold">Filter Options</div>
       <div className="flex flex-col gap-2">
-        <div>Select Filter Options</div>
-        <select
+        <Select
           value={filterDataCopy?.column ?? ""}
-          onChange={hanldleFilterColumnChange}
+          onValueChange={hanldleFilterColumnChange}
         >
-          <option value="">Select Column</option>
-          {headers.map((header) => (
-            <option key={header.name} value={header.name}>
-              {header.name}
-            </option>
-          ))}
-        </select>
-        <select
+          <SelectTrigger>
+            <SelectValue placeholder="Select Column" />
+          </SelectTrigger>
+          <SelectContent>
+            {headers.map((header) => (
+              <SelectItem key={header.name} value={header.name}>
+                {header.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select
           value={filterDataCopy?.operator ?? ""}
-          name="operator"
-          onChange={handleFilterDataChange}
+          onValueChange={(value) => handleFilterDataChange("operator", value)}
         >
-          <option value="">Select Operator</option>
-          {selectedColumnDataType === SupportedDataType.String &&
-            Object.values(StringFilterOption).map((option, i) => (
-              <option key={i} value={option}>
-                {option}
-              </option>
-            ))}
-          {selectedColumnDataType === SupportedDataType.Number &&
-            Object.values(NumberFilterOption).map((option, i) => (
-              <option key={i} value={option}>
-                {option}
-              </option>
-            ))}
-          {selectedColumnDataType === SupportedDataType.Date &&
-            Object.values(DateFilterOption).map((option, i) => (
-              <option key={i} value={option}>
-                {option}
-              </option>
-            ))}
-        </select>
+          <SelectTrigger>
+            <SelectValue placeholder="Select Operator" />
+          </SelectTrigger>
+          <SelectContent>
+            {selectedColumnDataType === SupportedDataType.String &&
+              Object.values(StringFilterOption).map((option, i) => (
+                <SelectItem key={i} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            {selectedColumnDataType === SupportedDataType.Number &&
+              Object.values(NumberFilterOption).map((option, i) => (
+                <SelectItem key={i} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            {selectedColumnDataType === SupportedDataType.Date &&
+              Object.values(DateFilterOption).map((option, i) => (
+                <SelectItem key={i} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+          </SelectContent>
+        </Select>
         <div className="flex items-center gap-2">
           <div>
-            <select
+            <Select
               value={filterDataCopy?.type ?? FilterType.Absolute}
-              name="type"
-              onChange={handleFilterDataChange}
+              onValueChange={(value) => handleFilterDataChange("type", value)}
             >
-              {Object.values(FilterType).map((option, i) => (
-                <option value={option} key={i}>
-                  {option == FilterType.Absolute
-                    ? "Select Value"
-                    : "Select Column"}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger>
+                <SelectValue placeholder="Select Option" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.values(FilterType).map((option, i) => (
+                  <SelectItem value={option} key={i}>
+                    {option == FilterType.Absolute
+                      ? "Select Value"
+                      : "Select Column"}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div>
             {filterDataCopy?.type === FilterType.Absolute && (
-              <input
-                className="px-2"
-                type={`${selectedColumnDataType == SupportedDataType.Date ? 'date' : 'text'}`}
+              <Input
                 value={filterDataCopy?.value ?? ""}
                 placeholder="Enter Value"
+                onChange={(e) =>
+                  handleFilterDataChange("value", e.target.value)
+                }
                 name="value"
-                onChange={handleFilterDataChange}
+                type={`${
+                  selectedColumnDataType == SupportedDataType.Date
+                    ? "date"
+                    : "text"
+                }`}
               />
             )}
             {filterDataCopy?.type === FilterType.Relative && (
-              <select
+              <Select
                 value={filterDataCopy?.value ?? ""}
-                name="value"
-                onChange={handleFilterDataChange}
+                onValueChange={(value) =>
+                  handleFilterDataChange("value", value)
+                }
               >
-                <option value="">Select Column</option>
-                {headers
-                  .filter((header) => header.type == selectedColumnDataType)
-                  .map((header) => (
-                    <option key={header.name} value={header.name}>
-                      {header.name}
-                    </option>
-                  ))}
-              </select>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Column" />
+                </SelectTrigger>
+                <SelectContent>
+                  {headers
+                    .filter((header) => header.type == selectedColumnDataType)
+                    .map((header) => (
+                      <SelectItem key={header.name} value={header.name}>
+                        {header.name}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
             )}
           </div>
         </div>
-        <button
-          type="button"
-          className="bg-success p-2 font-semibold"
-          onClick={handleApplyClick}
-        >
+        <Button type="button" onClick={handleApplyClick}>
           Apply
-        </button>
+        </Button>
       </div>
     </>
   );

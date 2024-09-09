@@ -1,7 +1,15 @@
 import { Header } from "@/models/CSVData";
 import { SortData, SortDirection } from "@/models/Transformation";
-import { ChangeEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { MdDelete } from "react-icons/md";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import { Button } from "../ui/button";
 
 type SortTransformationOptionsComponentProps = {
   sortData: SortData[];
@@ -40,27 +48,25 @@ export default function SortTransformationOptionsComponent({
     });
   };
 
-  const handleSortColumnChange =
-    (index: number) => (e: ChangeEvent<HTMLSelectElement>) => {
-      if (!sortDataCopy) return;
-      setSortDataCopy((prev) => {
-        if (!prev) return prev;
-        const newSortData = [...prev];
-        newSortData[index].column = e.target.value;
-        return newSortData;
-      });
-    };
+  const handleSortColumnChange = (index: number) => (value: string) => {
+    if (!sortDataCopy) return;
+    setSortDataCopy((prev) => {
+      if (!prev) return prev;
+      const newSortData = [...prev];
+      newSortData[index].column = value;
+      return newSortData;
+    });
+  };
 
-  const handleSortDirectionChange =
-    (index: number) => (e: ChangeEvent<HTMLSelectElement>) => {
-      if (!sortDataCopy) return;
-      setSortDataCopy((prev) => {
-        if (!prev) return prev;
-        const newSortData = [...prev];
-        newSortData[index].direction = e.target.value as SortDirection;
-        return newSortData;
-      });
-    };
+  const handleSortDirectionChange = (index: number) => (value: string) => {
+    if (!sortDataCopy) return;
+    setSortDataCopy((prev) => {
+      if (!prev) return prev;
+      const newSortData = [...prev];
+      newSortData[index].direction = value as SortDirection;
+      return newSortData;
+    });
+  };
 
   const handleDeleteSortColumnClick = (index: number) => () => {
     if (!sortDataCopy || sortDataCopy.length == 1) return;
@@ -97,47 +103,53 @@ export default function SortTransformationOptionsComponent({
   };
   return (
     <>
-      <div className="flex flex-col gap-2">
-        <div>Select Columns To Sort (Max 3 columns)</div>
+      <div className="flex flex-col gap-2 w-full md:min-w-[40vw]">
+        <div className="font-semibold">
+          Select Columns To Sort (Max 3 columns)
+        </div>
         {sortDataCopy?.map((sortData, index) => {
           return (
             <div key={index} className="flex items-center gap-2">
-              <select
+              <Select
                 value={sortData.column}
-                onChange={handleSortColumnChange(index)}
+                onValueChange={handleSortColumnChange(index)}
               >
-                <option value="">Select Column</option>
-                {headers.map((header) => (
-                  <option key={header.name} value={header.name}>
-                    {header.name}
-                  </option>
-                ))}
-              </select>
-              <select
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Column" />
+                </SelectTrigger>
+                <SelectContent>
+                  {headers.map((header) => (
+                    <SelectItem key={header.name} value={header.name}>
+                      {header.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select
                 value={sortData.direction}
-                onChange={handleSortDirectionChange(index)}
+                onValueChange={handleSortDirectionChange(index)}
               >
-                <option value="asc">Ascending</option>
-                <option value="desc">Descending</option>
-              </select>
-              <MdDelete
-                className="cursor-pointer h-full text-danger"
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Column" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="asc">Ascending</SelectItem>
+                  <SelectItem value="desc">Descending</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                variant="outline"
                 onClick={handleDeleteSortColumnClick(index)}
-              />
+              >
+                <MdDelete />
+              </Button>
             </div>
           );
         })}
-        <button className="bg-primary p-2" onClick={handleAddSortColumnClick}>
+        <Button variant="secondary" onClick={handleAddSortColumnClick}>
           Add Sort Column
-        </button>
-
-        <button
-          type="button"
-          className="bg-success p-2 font-semibold"
-          onClick={handleApplyClick}
-        >
-          Apply
-        </button>
+        </Button>
+        <Button onClick={handleApplyClick}>Apply</Button>
       </div>
     </>
   );

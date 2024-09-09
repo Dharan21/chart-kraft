@@ -17,6 +17,13 @@ import {
 } from "@/utils/utility-functions";
 import SortTransformationOptionsComponent from "./SortTransformationOptions";
 import GroupTransformationsOptionsComponent from "./GroupTransformationsOptions";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 type TransformationsSelectionDialogProps = {
   isOpen: boolean;
@@ -38,10 +45,7 @@ export default function TransformationsSelectionDialogComponent({
     }
   }, [transformation]);
 
-  const handleTransformationTypeChange = (
-    e: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const type = e.target.value as TransformationType;
+  const handleTransformationTypeChange = (type: TransformationType) => {
     setTransformationObject((prev) => {
       return {
         ...prev,
@@ -84,7 +88,7 @@ export default function TransformationsSelectionDialogComponent({
       outputData: outputData,
       isApplied: true,
     });
-  }
+  };
 
   if (
     !transformation ||
@@ -101,26 +105,28 @@ export default function TransformationsSelectionDialogComponent({
   return (
     <>
       <DialogComponent isOpen={isOpen} onClose={onClose}>
-        <div className=" flex flex-col gap-4">
-          <div>
-            <div>Select Transformation Type</div>
-            <select
-              value={transformationObject?.type || ""}
-              onChange={handleTransformationTypeChange}
-            >
-              <option value="">Select Transformation</option>
+        <div className="flex flex-col gap-4">
+          <div className="font-bold">Edit Transformation</div>
+          <Select
+            value={transformationObject?.type || ""}
+            onValueChange={handleTransformationTypeChange}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select Transformation Type" />
+            </SelectTrigger>
+            <SelectContent>
               {Object.keys(TransformationType).map((key) => (
-                <option
+                <SelectItem
                   key={key}
                   value={
                     TransformationType[key as keyof typeof TransformationType]
                   }
                 >
                   {key}
-                </option>
+                </SelectItem>
               ))}
-            </select>
-          </div>
+            </SelectContent>
+          </Select>
           {!!transformationObject?.inputData && (
             <>
               <hr />

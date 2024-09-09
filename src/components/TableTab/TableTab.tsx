@@ -1,30 +1,39 @@
 import { CSVData, SupportedDataType } from "@/models/CSVData";
+// import {
+//   Table,
+//   TableBody,
+//   TableCell,
+//   TableHead,
+//   TablePagination,
+//   TableRow,
+// } from "@mui/material";
+import { format } from "date-fns";
+import React from "react";
 import {
   Table,
   TableBody,
   TableCell,
   TableHead,
-  TablePagination,
+  TableHeader,
   TableRow,
-} from "@mui/material";
-import { format } from "date-fns";
-import React from "react";
+} from "../ui/table";
+import { Pagination } from "./TablePagination";
+import { Card, CardContent } from "../ui/card";
 
 type TableTabProps = {
   csvData: CSVData;
 };
 
 export default function TableTabComponent({ csvData }: TableTabProps) {
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [page, setPage] = React.useState(1);
+  const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const visibleRows = React.useMemo(
     () =>
-      (csvData?.rows ?? []).slice(
-        page * rowsPerPage,
-        page * rowsPerPage + rowsPerPage
-      ),
+      (csvData?.rows ?? []).slice((page - 1) * rowsPerPage, page * rowsPerPage),
     [page, rowsPerPage, csvData]
   );
+  const totalItems = csvData?.rows.length ?? 0;
+  const totalPages = Math.ceil(totalItems / rowsPerPage);
   const headerTypes = csvData.headers.reduce((acc, header) => {
     acc[header.name] = header.type;
     return acc;
@@ -34,61 +43,67 @@ export default function TableTabComponent({ csvData }: TableTabProps) {
     return <></>;
   }
 
-  const handleChangePage = (_: any, newPage: number) => {
+  const handleChangePage = (newPage: number) => {
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
+  const handleChangeRowsPerPage = (rows: number) => {
+    setRowsPerPage(rows);
+    setPage(1);
+  };
+
+  const numberPipe = (value: number): string => {
+    if (isNaN(value)) return "";
+    if (value % 1 === 0) {
+      return value.toString();
+    } else {
+      return value.toFixed(2);
+    }
   };
 
   return (
-    <div className="p-10">
-      <Table
-        sx={{ background: "white" }}
-        size="small"
-        aria-label="a dense table"
-      >
-        <TableHead>
-          <TableRow>
-            {csvData.headers.map((header) => (
-              <TableCell key={header.name}>{header.name}</TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {visibleRows.map((row, index) => (
-            <TableRow
-              key={index}
-              sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-            >
-              {Object.entries(row).map(([key, value]) => (
-                <TableCell key={key}>
-                  {headerTypes[key] === SupportedDataType.Date &&
-                    format(value as string, "yyyy-MM-dd")}
-                  {headerTypes[key] === SupportedDataType.String &&
-                    (value as string)}
-                  {headerTypes[key] === SupportedDataType.Number &&
-                    !!value &&
-                    (value as number).toFixed(2)}
-                </TableCell>
+    <>
+      <Card>
+        <CardContent className="flex flex-col gap-4 pt-6">
+          <div className="font-bold text-2xl">Transformed Data</div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                {csvData.headers.map((header) => (
+                  <TableHead key={header.name} className="font-semibold">
+                    {header.name}
+                  </TableHead>
+                ))}
+              </TableRow>
+            </TableHeader>
+            <TableBody className="max-h-[300px] overflow-y-scroll">
+              {visibleRows.map((row, index) => (
+                <TableRow key={index}>
+                  {Object.entries(row).map(([key, value]) => (
+                    <TableCell key={key}>
+                      {headerTypes[key] === SupportedDataType.Date &&
+                        format(value as string, "yyyy-MM-dd")}
+                      {headerTypes[key] === SupportedDataType.String &&
+                        (value as string)}
+                      {headerTypes[key] === SupportedDataType.Number &&
+                        !!value &&
+                        numberPipe(value as number)}
+                    </TableCell>
+                  ))}
+                </TableRow>
               ))}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      <TablePagination
-        rowsPerPageOptions={[5, 10, 25]}
-        component="div"
-        count={csvData.rows.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-      />
-    </div>
+            </TableBody>
+          </Table>
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            rowsPerPage={rowsPerPage}
+            totalItems={totalItems}
+          />
+        </CardContent>
+      </Card>
+    </>
   );
 }

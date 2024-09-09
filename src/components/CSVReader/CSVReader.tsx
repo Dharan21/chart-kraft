@@ -61,7 +61,7 @@ export default function CSVReader({ onLoad }: CSVReaderProps) {
         accept=".csv"
         onChange={handleFileChange}
       />
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && <div style={{ color: "red" }}>{error}</div>}
       <HeadersTypeSelectionComponent
         isOpen={isOpenTypeSettingDialog}
         csvData={csvData}

@@ -1,9 +1,22 @@
-import { updateChartOptions } from "@/lib/features/tabs/tabsSlice";
+import { updateChartOptions } from "@/lib/features/appSlice";
 import { useAppSelector, useAppDispatch } from "@/lib/hooks";
 import { SupportedDataType } from "@/models/CSVData";
 import { LineChartOptions } from "@/models/ChartOptions";
 import { LineChart } from "@mui/x-charts";
 import { useState, useEffect } from "react";
+import { Label } from "../ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import {
+  DropdownMenuCheckboxes,
+  DropdownMenuCheckboxOption,
+} from "../common/dropdown-menu-checkboxes";
+import ChartFragement from "./ChartFragement";
 
 type LineChartProps = {
   chartOptions: LineChartOptions;
@@ -11,7 +24,7 @@ type LineChartProps = {
 
 export default function LineChartComponent({ chartOptions }: LineChartProps) {
   const csvData = useAppSelector(
-    (state) => state.tabs.data[state.tabs.currentTabIndex].transformedData
+    (state) => state.app.tabsData[state.app.currentTabIndex].transformedData
   );
 
   const [numberTypeHeaders, setNumberTypeHeaders] = useState(
@@ -49,13 +62,12 @@ export default function LineChartComponent({ chartOptions }: LineChartProps) {
   };
 
   const handleMultipleSelectionChange = (
-    e: React.ChangeEvent<HTMLSelectElement>
+    options: DropdownMenuCheckboxOption[]
   ) => {
-    const options = e.target.options;
     const selectedValues: string[] = [];
     for (let i = 0; i < options.length; i++) {
-      if (options[i].selected) {
-        selectedValues.push(options[i].value);
+      if (options[i].checked) {
+        selectedValues.push(options[i].label);
       }
     }
     handleChartOptionsChange({
@@ -65,63 +77,58 @@ export default function LineChartComponent({ chartOptions }: LineChartProps) {
     setPlotXOptions(headerNames.filter((x) => !selectedValues.includes(x)));
   };
 
-  const handleSelectionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleSelectionChange = (value: string) => {
     handleChartOptionsChange({
-      plotX: e.target.value,
+      plotX: value,
       plotY: chartOptions.plotY,
     });
-    setPlotYOptions(numberTypeHeaders.filter((x) => x.name !== e.target.value));
+    setPlotYOptions(numberTypeHeaders.filter((x) => x.name !== value));
   };
   return (
     <>
-      <div className="flex gap-2">
-        <div className="flex flex-col">
-          <label htmlFor="">Plot on x</label>
-          <select
+      <div className="flex gap-4 mb-4">
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="plot-x">Chart Type</Label>
+          <Select
             name="plot-x"
-            id="plot-x"
-            onChange={handleSelectionChange}
             value={chartOptions.plotX ?? ""}
+            onValueChange={handleSelectionChange}
           >
-            <option disabled value="">
-              Select
-            </option>
-            {plotXOptions.map((header, i) => (
-              <option key={`plot-x-${i}`} value={header}>
-                {header}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger id="plot-x">
+              <SelectValue placeholder="Select chart type" />
+            </SelectTrigger>
+            <SelectContent>
+              {plotXOptions.map((header, i) => (
+                <SelectItem key={`plot-x-${i}`} value={header}>
+                  {header}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-        <div className="flex flex-col">
-          <label htmlFor="">Plot on y</label>
-          <select
-            name="plot-y"
-            id="plot-y"
-            value={chartOptions.plotY ?? [""]}
-            multiple
-            onChange={handleMultipleSelectionChange}
-          >
-            <option disabled value="">
-              Select a number column
-            </option>
-            {plotYOptions.map((header, i) => (
-              <option key={`plot-y-${i}`} value={header.name}>
-                {header.name}
-              </option>
-            ))}
-          </select>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="plot-y">Plot on y</Label>
+          <DropdownMenuCheckboxes
+            label="Plot on y"
+            options={plotYOptions.map((opt) => ({
+              label: opt.name,
+              checked: chartOptions.plotY?.includes(opt.name) ?? false,
+            }))}
+            onCheckedChange={handleMultipleSelectionChange}
+          />
         </div>
       </div>
       {chartOptions.plotX &&
         chartOptions.plotY &&
         chartOptions.plotY.length > 0 && (
-          <LineChart
-            height={400}
-            dataset={csvData.rows}
-            xAxis={[{ scaleType: "band", dataKey: chartOptions.plotX }]}
-            series={chartOptions.plotY.map((x) => ({ dataKey: x, label: x }))}
-          />
+          <ChartFragement>
+            <LineChart
+              height={400}
+              dataset={csvData.rows}
+              xAxis={[{ scaleType: "band", dataKey: chartOptions.plotX }]}
+              series={chartOptions.plotY.map((x) => ({ dataKey: x, label: x }))}
+            />
+          </ChartFragement>
         )}
     </>
   );

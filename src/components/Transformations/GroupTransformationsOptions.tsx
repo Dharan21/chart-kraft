@@ -3,6 +3,14 @@ import { AggregateOption } from "@/models/GroupByOptions";
 import { AggregateData, GroupData } from "@/models/Transformation";
 import { ChangeEvent, useEffect, useState } from "react";
 import { MdDelete } from "react-icons/md";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import { Button } from "../ui/button";
 
 type GroupTransformationOptionsComponentProps = {
   groupData: GroupData;
@@ -47,15 +55,14 @@ export default function GroupTransformationsOptionsComponent({
     });
   }, [groupData]);
 
-  const handleGroupDataColumnChange =
-    (index: number) => (e: ChangeEvent<HTMLSelectElement>) => {
-      setGroupDataCopy((prev) => {
-        if (!prev) return prev;
-        const newGroupData = { ...prev };
-        newGroupData.columns[index] = e.target.value;
-        return newGroupData;
-      });
-    };
+  const handleGroupDataColumnChange = (index: number) => (value: string) => {
+    setGroupDataCopy((prev) => {
+      if (!prev) return prev;
+      const newGroupData = { ...prev };
+      newGroupData.columns[index] = value;
+      return newGroupData;
+    });
+  };
 
   const handleAddAggregate = () => {
     if (!groupDataCopy) return;
@@ -84,28 +91,26 @@ export default function GroupTransformationsOptionsComponent({
     });
   };
 
-  const handleAggregateColumnChange =
-    (index: number) => (e: ChangeEvent<HTMLSelectElement>) => {
-      if (!groupDataCopy) return;
-      setGroupDataCopy((prev) => {
-        if (!prev) return prev;
-        const newAggregateData = [...prev.aggregateData];
-        newAggregateData[index].column = e.target.value;
-        return {
-          ...prev,
-          aggregateData: newAggregateData,
-        };
-      });
-    };
+  const handleAggregateColumnChange = (index: number) => (value: string) => {
+    if (!groupDataCopy) return;
+    setGroupDataCopy((prev) => {
+      if (!prev) return prev;
+      const newAggregateData = [...prev.aggregateData];
+      newAggregateData[index].column = value;
+      return {
+        ...prev,
+        aggregateData: newAggregateData,
+      };
+    });
+  };
 
   const handleAggregateFunctionChange =
-    (index: number) => (e: ChangeEvent<HTMLSelectElement>) => {
+    (index: number) => (value: AggregateOption) => {
       if (!groupDataCopy) return;
       setGroupDataCopy((prev) => {
         if (!prev) return prev;
         const newAggregateData = [...prev.aggregateData];
-        newAggregateData[index].aggregateOption = e.target
-          .value as AggregateOption;
+        newAggregateData[index].aggregateOption = value;
         return {
           ...prev,
           aggregateData: newAggregateData,
@@ -160,23 +165,27 @@ export default function GroupTransformationsOptionsComponent({
   };
 
   return (
-    <div className=" flex flex-col gap-2">
+    <div className="flex flex-col gap-2 w-full md:min-w-[40vw]">
       <div className="font-semibold">Select Columns To Group</div>
       <div className="flex items-center gap-2">
         {groupDataCopy?.columns.map((column, index) => {
           return (
-            <select
+            <Select
               key={index}
               value={column}
-              onChange={handleGroupDataColumnChange(index)}
+              onValueChange={handleGroupDataColumnChange(index)}
             >
-              <option value="">Select Column {index + 1}</option>
-              {headers.map((header) => (
-                <option key={header.name} value={header.name}>
-                  {header.name}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger>
+                <SelectValue placeholder="Select Column" />
+              </SelectTrigger>
+              <SelectContent>
+                {headers.map((header) => (
+                  <SelectItem key={header.name} value={header.name}>
+                    {header.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           );
         })}
       </div>
@@ -189,59 +198,60 @@ export default function GroupTransformationsOptionsComponent({
             {groupDataCopy.aggregateData.map((aggregate, i) => (
               <div className="flex gap-2 items-end" key={i}>
                 <div className="w-6/12 flex flex-col">
-                  <label htmlFor={`aggr-col-${i}`}>Column</label>
-                  <select
+                  <Select
                     name={`aggr-col-${i}`}
-                    id={`aggr-col-${i}`}
                     value={aggregate.column}
-                    onChange={handleAggregateColumnChange(i)}
+                    onValueChange={handleAggregateColumnChange(i)}
                   >
-                    <option value="">Select</option>
-                    {availableColumnsForAggregation(i).map((header) => (
-                      <option key={header.name} value={header.name}>
-                        {header.name}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Column" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableColumnsForAggregation(i).map((header) => (
+                        <SelectItem key={header.name} value={header.name}>
+                          {header.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="w-5/12 flex flex-col">
-                  <label htmlFor={`aggr-fn-${i}`}>Function</label>
-                  <select
+                  <Select
                     name={`aggr-fn-${i}`}
-                    id={`aggr-fn-${i}`}
-                    onChange={handleAggregateFunctionChange(i)}
+                    value={aggregate.aggregateOption}
+                    onValueChange={handleAggregateFunctionChange(i)}
                   >
-                    <option value="">Select</option>
-                    {Object.values(AggregateOption).map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Function" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.values(AggregateOption).map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="w-1/12">
-                  <MdDelete
-                    className="h-6 w-6 cursor-pointer text-danger"
+                  <Button
+                    variant="outline"
+                    type="button"
                     onClick={() => handleRemoveAggregate(i)}
-                  />
+                  >
+                    <MdDelete />
+                  </Button>
                 </div>
               </div>
             ))}
           </>
         )}
-      <button
-        className="bg-primary p-2 font-semibold"
-        onClick={handleAddAggregate}
-      >
+      <Button type="button" variant="secondary" onClick={handleAddAggregate}>
         Add Aggregate Function
-      </button>
-      <button
-        type="button"
-        className="bg-success p-2 font-semibold"
-        onClick={handleApplyClick}
-      >
+      </Button>
+      <Button type="button" onClick={handleApplyClick}>
         Apply
-      </button>
+      </Button>
     </div>
   );
 }

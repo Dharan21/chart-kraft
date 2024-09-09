@@ -1,9 +1,18 @@
-import { updateChartOptions } from "@/lib/features/tabs/tabsSlice";
+import { updateChartOptions } from "@/lib/features/appSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { SupportedDataType } from "@/models/CSVData";
 import { PieChartOptions } from "@/models/ChartOptions";
 import { PieChart } from "@mui/x-charts";
 import { useEffect, useState } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import { Label } from "../ui/label";
+import ChartFragement from "./ChartFragement";
 
 type PieChartProps = {
   chartOptions: PieChartOptions;
@@ -11,7 +20,7 @@ type PieChartProps = {
 
 export default function PieChartCompnent({ chartOptions }: PieChartProps) {
   const csvData = useAppSelector(
-    (state) => state.tabs.data[state.tabs.currentTabIndex].transformedData
+    (state) => state.app.tabsData[state.app.currentTabIndex].transformedData
   );
 
   const [headerNames, setHeaderNames] = useState<string[]>(
@@ -35,73 +44,78 @@ export default function PieChartCompnent({ chartOptions }: PieChartProps) {
     dispatch(updateChartOptions(chartOptions));
   };
 
-  const handleSelectionChange = (
-    e: React.ChangeEvent<HTMLSelectElement>,
-    change: "value" | "label"
-  ) => {
+  const handleSelectionChange = (value: string, change: "value" | "label") => {
     const updatedChartOptions = {
-      valueColumn:
-        change === "value" ? e.target.value : chartOptions.valueColumn,
-      labelColumn:
-        change === "label" ? e.target.value : chartOptions.labelColumn,
+      valueColumn: change === "value" ? value : chartOptions.valueColumn,
+      labelColumn: change === "label" ? value : chartOptions.labelColumn,
     };
     handleChartOptionsChange(updatedChartOptions);
   };
 
   return (
     <>
-      <div className="flex gap-2">
-        <div className="flex flex-col">
-          <label htmlFor="">Select Label To Show</label>
-          <select
+      <div className="flex gap-4 mb-4">
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="label-to-show">Select Label To Show</Label>
+          <Select
             name="plot-x"
-            id="plot-x"
-            onChange={(e) => handleSelectionChange(e, "label")}
             value={chartOptions.labelColumn ?? ""}
+            onValueChange={(value) => handleSelectionChange(value, "label")}
           >
-            <option disabled value="">
-              Select
-            </option>
-            {headerNames.map((header, i) => (
-              <option key={`plot-x-${i}`} value={header}>
-                {header}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger id="label-to-show">
+              <SelectValue placeholder="Select Label To Show" />
+            </SelectTrigger>
+            <SelectContent>
+              {headerNames.map((header, i) => (
+                <SelectItem key={`plot-x-${i}`} value={header}>
+                  {header}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-        <div className="flex flex-col">
-          <label htmlFor="">Select Column</label>
-          <select
-            name="plot-x"
-            id="plot-x"
-            onChange={(e) => handleSelectionChange(e, "value")}
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="column">Select Column</Label>
+          <Select
+            name="column"
             value={chartOptions.valueColumn ?? ""}
+            onValueChange={(value) => handleSelectionChange(value, "value")}
           >
-            <option disabled value="">
-              Select
-            </option>
-            {numberTypeHeaders.map((header, i) => (
-              <option key={`plot-x-${i}`} value={header.name}>
-                {header.name}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger id="column">
+              <SelectValue placeholder="Select Column" />
+            </SelectTrigger>
+            <SelectContent>
+              {numberTypeHeaders.map((header, i) => (
+                <SelectItem key={`plot-x-${i}`} value={header.name}>
+                  {header.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
       {chartOptions.valueColumn && (
-        <PieChart
-          height={400}
-          series={[
-            {
-              data: csvData.rows
-                .filter((x) => !!x[chartOptions.valueColumn])
-                .map((row) => ({
-                  label: (row[chartOptions.labelColumn] as string) ?? "",
-                  value: row[chartOptions.valueColumn] as number,
-                })),
-            },
-          ]}
-        />
+        <ChartFragement>
+          <PieChart
+            height={400}
+            series={[
+              {
+                data: csvData.rows
+                  .filter(
+                    (x) =>
+                      !!x[chartOptions.valueColumn] &&
+                      !!x[chartOptions.labelColumn] &&
+                      !isNaN(x[chartOptions.valueColumn] as number)
+                  )
+                  .map((row, index) => ({
+                    id: index,
+                    label: row[chartOptions.labelColumn]?.toString() ?? "",
+                    value: row[chartOptions.valueColumn] as number,
+                  })),
+              },
+            ]}
+          />
+        </ChartFragement>
       )}
     </>
   );

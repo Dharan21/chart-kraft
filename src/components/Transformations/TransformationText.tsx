@@ -18,7 +18,8 @@ export function FilterTransformationTextComponent({
 }: FilterTransformationTextComponentProps) {
   return (
     <TransfomrationTextFragment rowsCount={rowsCount}>
-      {filterData.column} {filterData.operator} {filterData.value}
+      <div className="font-semibold">Filter</div>
+      {filterData?.column} {filterData?.operator} {filterData?.value}
     </TransfomrationTextFragment>
   );
 }
@@ -34,7 +35,8 @@ export function SortTransformationTextComponent({
 }: SortTransformationTextComponentProps) {
   return (
     <TransfomrationTextFragment rowsCount={rowsCount}>
-      {sortData.map((sort, index) => (
+      <div className="font-semibold">Sort</div>
+      {sortData?.map((sort, index) => (
         <div key={index}>
           {sort.column} {sort.direction}
         </div>
@@ -54,10 +56,10 @@ export function GroupTransformationTextComponent({
 }: GroupTransformationTextComponentProps) {
   return (
     <TransfomrationTextFragment rowsCount={rowsCount}>
-      Group By:
-      <div>{groupData.columns.join(", ")}</div>
+      <div className="font-semibold">Group By</div>
+      <div>{groupData?.columns.join(", ")}</div>
       Aggregations On:
-      {groupData.aggregateData
+      {groupData?.aggregateData
         .map((agg) => `${agg.column} - ${agg.aggregateOption}`)
         .map((item, index) => (
           <div key={index}>{item}</div>

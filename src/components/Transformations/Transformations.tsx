@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import TransformationBoxComponent from "./TransformationBox";
 import {
   FilterData,
@@ -16,44 +16,33 @@ import {
   GroupTransformationTextComponent,
   SortTransformationTextComponent,
 } from "./TransformationText";
+import { useAppSelector } from "@/lib/hooks";
+import { useDispatch } from "react-redux";
+import {
+  addGlobalTransformation,
+  applyGlobalTransformations,
+  deleteGlobalTransformation,
+  resetGlobalTransformations,
+  updateGlobalTransformation,
+} from "@/lib/features/appSlice";
+import { Button } from "../ui/button";
+import { PlusCircle } from "lucide-react";
+import { Card, CardContent } from "../ui/card";
 
-type TransformationsProps = {
-  csvData: CSVData;
-  handleTransformedData: (data: CSVData) => void;
-};
-
-export default function  TransformationsComponent({
-  csvData,
-  handleTransformedData,
-}: TransformationsProps) {
-  const [transformations, setTransformations] = useState<Transformation[]>([
-    { inputData: csvData } as Transformation,
-  ]);
+export default function TransformationsComponent() {
+  const transformations = useAppSelector(
+    (state) => state.app.globalTransformations
+  );
   const [selectedIndex, setSelectedIndex] = useState<number>(-1);
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+  const dispatch = useDispatch();
 
-  const addTransformation = (index: number) => {
-    if (!isAllowedToAddTransformation(index)) {
+  const addTransformation = (type: TransformationType) => {
+    if (isAllowedToAddTransformation(transformations.length)) {
+      dispatch(addGlobalTransformation(type));
+    } else {
       alert("Complete the previous transformations first");
-      return;
     }
-    setTransformations((prev) => {
-      const newTransformations = [...prev];
-      if (index >= 0 && index < newTransformations.length) {
-        const inputCsvData =
-          index == 0 ? csvData : newTransformations[index - 1].outputData;
-        newTransformations.splice(index, 0, {
-          inputData: inputCsvData,
-        } as Transformation);
-      } else {
-        newTransformations.push({
-          inputData:
-            newTransformations[newTransformations.length - 1].outputData,
-        } as Transformation);
-      }
-
-      return newTransformations;
-    });
   };
 
   const handleEditTransformation = (index: number) => {
@@ -69,23 +58,17 @@ export default function  TransformationsComponent({
       "You will lose all transformations after this. Are you sure?"
     );
     if (!res) return;
-    setTransformations((prev) => {
-      let newTransformations = [...prev];
-      newTransformations.splice(index);
-      if (index == 0) {
-        newTransformations = [{ inputData: csvData } as Transformation];
-      }
-      return newTransformations;
-    });
+    dispatch(deleteGlobalTransformation(index));
   };
 
   const handleTransformationDialogClose = (data?: Transformation) => {
     if (!!data && !!(data as Transformation)?.outputData) {
-      setTransformations((prev) => {
-        const newTransformations = [...prev];
-        newTransformations[selectedIndex] = data;
-        return newTransformations;
-      });
+      dispatch(
+        updateGlobalTransformation({
+          index: selectedIndex,
+          transformation: data,
+        })
+      );
     }
 
     setIsDialogOpen(false);
@@ -101,10 +84,17 @@ export default function  TransformationsComponent({
   };
 
   const handleApplyTransformationsClick = () => {
+    if (transformations.length == 0) return;
     if (isAllowedToAddTransformation(transformations.length - 1)) {
       const outputData = transformations[transformations.length - 1].outputData;
       if (!!outputData) {
-        handleTransformedData(outputData);
+        if (
+          confirm(
+            "This action will reset your tabs data. Are you sure you want to proceed?"
+          )
+        ) {
+          dispatch(applyGlobalTransformations());
+        }
       } else {
         alert(
           "Could not apply transformations. Some transformations are incomplete."
@@ -118,65 +108,96 @@ export default function  TransformationsComponent({
   };
 
   const handleResetTransformationsClick = () => {
-    setTransformations([{ inputData: csvData } as Transformation]);
-    handleTransformedData(csvData);
+    dispatch(resetGlobalTransformations());
   };
 
   return (
     <>
-      <TransformationsSelectionDialogComponent
-        isOpen={isDialogOpen}
-        onClose={handleTransformationDialogClose}
-        transformation={transformations[selectedIndex]}
-      />
-      <div className="text-center mb-2">Transformations</div>
-      {transformations.map((transformation, index) => (
-        <TransformationBoxComponent
-          key={index}
-          isDisplayPrevAdd={index == 0}
-          isDisplayNextAdd={index == transformations.length - 1}
-          isDeleteDisabled={transformations.length == 1 && index == 0}
-          handlePrevAdd={() => addTransformation(index)}
-          handleNextAdd={() => addTransformation(index + 1)}
-          onEdit={() => handleEditTransformation(index)}
-          onDelete={() => handleDeleteTransformation(index)}
-        >
-          {!!transformation && (
-            <>
-              {transformation.type == TransformationType.Filter && (
-                <FilterTransformationTextComponent
-                  filterData={transformation.data as FilterData}
-                  rowsCount={transformation.outputData?.rows.length ?? 0}
-                />
-              )}
-              {transformation.type == TransformationType.Sort && (
-                <SortTransformationTextComponent
-                  sortData={transformation.data as SortData[]}
-                  rowsCount={transformation.outputData?.rows.length ?? 0}
-                />
-              )}
-              {transformation.type == TransformationType.Group && (
-                <GroupTransformationTextComponent
-                  groupData={transformation.data as GroupData}
-                  rowsCount={transformation.outputData?.rows.length ?? 0}
-                />
-              )}
-            </>
+      {isDialogOpen && (
+        <TransformationsSelectionDialogComponent
+          isOpen={isDialogOpen}
+          onClose={handleTransformationDialogClose}
+          transformation={transformations[selectedIndex]}
+        />
+      )}
+      <Card>
+        <CardContent className="flex flex-col gap-4 pt-6">
+          <div className="font-bold text-2xl">Data Transformations</div>
+          <div className="flex gap-2 flex-wrap">
+            <Button
+              onClick={() => addTransformation(TransformationType.Filter)}
+            >
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Add Filter
+            </Button>
+            <Button onClick={() => addTransformation(TransformationType.Sort)}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Add Sort
+            </Button>
+            <Button onClick={() => addTransformation(TransformationType.Group)}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Add Group By
+            </Button>
+          </div>
+          {transformations && transformations.length > 0 && (
+            <div className="flex flex-wrap gap-4">
+              {transformations.map((transformation, index) => (
+                <TransformationBoxComponent
+                  key={index}
+                  isDisplayPrevAdd={false}
+                  isDisplayNextAdd={false}
+                  isDeleteDisabled={transformations.length == 1 && index == 0}
+                  handlePrevAdd={() => {}}
+                  handleNextAdd={() => {}}
+                  onEdit={() => handleEditTransformation(index)}
+                  onDelete={() => handleDeleteTransformation(index)}
+                >
+                  {!!transformation && (
+                    <>
+                      {transformation.type == TransformationType.Filter && (
+                        <FilterTransformationTextComponent
+                          filterData={transformation.data as FilterData}
+                          rowsCount={
+                            transformation.outputData?.rows.length ?? 0
+                          }
+                        />
+                      )}
+                      {transformation.type == TransformationType.Sort && (
+                        <SortTransformationTextComponent
+                          sortData={transformation.data as SortData[]}
+                          rowsCount={
+                            transformation.outputData?.rows.length ?? 0
+                          }
+                        />
+                      )}
+                      {transformation.type == TransformationType.Group && (
+                        <GroupTransformationTextComponent
+                          groupData={transformation.data as GroupData}
+                          rowsCount={
+                            transformation.outputData?.rows.length ?? 0
+                          }
+                        />
+                      )}
+                    </>
+                  )}
+                </TransformationBoxComponent>
+              ))}
+            </div>
           )}
-        </TransformationBoxComponent>
-      ))}
-      <button
-        className="bg-primary p-2 font-semibold mt-6"
-        onClick={handleApplyTransformationsClick}
-      >
-        Apply Transformations
-      </button>
-      <button
-        className="bg-danger p-2 font-semibold mt-2"
-        onClick={handleResetTransformationsClick}
-      >
-        Reset Transformations
-      </button>
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" onClick={handleApplyTransformationsClick}>
+              Apply Transformations
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleResetTransformationsClick}
+            >
+              Reset Transformations
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </>
   );
 }

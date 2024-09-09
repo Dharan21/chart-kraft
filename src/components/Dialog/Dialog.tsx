@@ -22,7 +22,7 @@ export default function DialogComponent({
           <dialog
             open={isOpen}
             onClose={onClose}
-            className="fixed inset-0 z-50 overflow-y-auto max-h-[70vh] text-text bg-background"
+            className="fixed inset-0 z-50 overflow-y-auto max-h-[70vh] max-w-[90vw] text-text bg-background"
           >
             <div className="p-5">{children}</div>
           </dialog>

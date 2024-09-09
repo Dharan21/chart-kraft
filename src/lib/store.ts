@@ -1,10 +1,10 @@
 import { configureStore } from "@reduxjs/toolkit";
-import tabsSlice from "./features/tabs/tabsSlice";
+import appSlice from "./features/appSlice";
 
 export const makeStore = () => {
   return configureStore({
     reducer: {
-      tabs: tabsSlice,
+      app: appSlice,
     },
   });
 };

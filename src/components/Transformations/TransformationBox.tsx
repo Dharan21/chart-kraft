@@ -2,6 +2,9 @@ import { PropsWithChildren } from "react";
 import { FaPlus } from "react-icons/fa";
 import { MdModeEditOutline } from "react-icons/md";
 import { MdDelete } from "react-icons/md";
+import { Button } from "../ui/button";
+import { Card } from "../ui/card";
+import { Edit, Trash2 } from "lucide-react";
 
 type TransformationBoxProps = {
   isDisplayPrevAdd?: boolean;
@@ -24,46 +27,37 @@ export default function TransformationBoxComponent({
   children,
 }: PropsWithChildren<TransformationBoxProps>) {
   return (
-    <div className="min-h-12 w-full rounded-2xl border-2 border-white relative">
+    <div className="flex flex-col items-center gap-2">
       {isDisplayPrevAdd && (
-        <div
-          className="absolute top-0 left-[50%] border-2 border-white rounded-full p-1 bg-primary cursor-pointer"
-          style={{ transform: "translate(-50%, -50%)", zIndex: 1 }}
-          onClick={handlePrevAdd}
-        >
-          <FaPlus className="text-white" />
+        <div>
+          <Button onClick={handlePrevAdd} type="button">
+            Add
+          </Button>
         </div>
       )}
-      {isDisplayNextAdd && (
-        <div
-          className="absolute bottom-0 left-[50%] border-2 border-white rounded-full p-1 bg-primary cursor-pointer"
-          style={{ transform: "translate(-50%, 50%)", zIndex: 1 }}
-          onClick={handleNextAdd}
-        >
-          <FaPlus className="text-white" />
-        </div>
-      )}
-      <div className="flex p-2 gap-2">
+      <Card className="w-[350px] flex gap-2 p-2">
         <div className="w-10/12">{children}</div>
-        <button
-          type="button"
-          className="w-1/12 flex justify-center items-center"
-          onClick={onEdit}
-        >
-          <MdModeEditOutline className="h-8 w-8" />
-        </button>
-        <button
-          type="button"
-          className={`w-1/12 flex justify-center items-center ${
-            isDeleteDisabled ? "cursor-not-allowed" : "cursor-pointer"
-          }`}
+        <Button variant="ghost" size="sm" onClick={onEdit}>
+          <Edit className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          disabled={isDeleteDisabled}
           onClick={() => {
             !isDeleteDisabled && onDelete();
           }}
         >
-          <MdDelete className={`h-8 w-8 ${isDeleteDisabled ? " text-gray-500" : ""}`} />
-        </button>
-      </div>
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </Card>
+      {isDisplayNextAdd && (
+        <div>
+          <Button onClick={handleNextAdd} type="button">
+            Add
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

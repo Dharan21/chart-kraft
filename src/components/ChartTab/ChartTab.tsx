@@ -8,16 +8,29 @@ import {
   availableChartOptions,
 } from "@/models/ChartOptions";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
-import { updateTabData } from "@/lib/features/tabs/tabsSlice";
+import { updateTabData } from "@/lib/features/appSlice";
 import LineChartComponent from "../Charts/LineChart";
 import PieChartCompnent from "../Charts/PieChart";
 import TransformationsComponent from "../Transformations/Transformations";
 import { CSVData } from "@/models/CSVData";
 import TabTransformationsComponent from "../Transformations/TabTransformation";
+import { Card, CardContent } from "../ui/card";
+import { Label } from "../ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
+import { PlusCircle, Trash2 } from "lucide-react";
+import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group";
 
 export default function ChartTabComponent() {
-  const currentTabIndex = useAppSelector((state) => state.tabs.currentTabIndex);
-  const tabsData = useAppSelector((state) => state.tabs.data);
+  const currentTabIndex = useAppSelector((state) => state.app.currentTabIndex);
+  const tabsData = useAppSelector((state) => state.app.tabsData);
   const tabData = tabsData[currentTabIndex];
 
   const dispatch = useAppDispatch();
@@ -26,72 +39,60 @@ export default function ChartTabComponent() {
     return <></>;
   }
 
-  const handleTransformedData = (data: CSVData) => {
-    const newTabData = {
-      ...tabData,
-      transformedData: data,
-    } as TabData;
-    handleTabDataChange(newTabData);
-  };
-
   const handleTabDataChange = (updatedTabData: TabData) => {
     dispatch(updateTabData({ index: currentTabIndex, updatedTabData }));
   };
 
-  const handleChartTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleChartTypeChange = (value: ChartType) => {
     const newTabData = {
       ...tabData,
-      chartType: e.target.value as ChartType,
+      chartType: value as ChartType,
     };
     handleTabDataChange(newTabData);
   };
 
   return (
-    <>
-      <div className="flex">
-        <div className="w-1/6">
-          <div className="flex flex-col gap-2">
-            <div>Chart Types</div>
-            <div>
-              <select
-                name="chart-type"
-                id=""
-                value={tabData.chartType}
-                onChange={handleChartTypeChange}
-              >
-                {availableChartOptions.map((opt, i) => (
-                  <option key={i} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <TabTransformationsComponent
-                csvData={tabData.inputData}
-                handleTransformedData={handleTransformedData}
-              />
-            </div>
+    <div className="flex flex-col gap-4">
+      <Card>
+        <CardContent className="flex flex-col gap-4 pt-6">
+          <TabTransformationsComponent />
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent className="flex flex-col gap-2 pt-6">
+          <div className="flex gap-2 items-center">
+            <div className="font-semibold text-xl">Chart Options: </div>
+            <ToggleGroup
+              type="single"
+              value={tabData.chartType}
+              onValueChange={handleChartTypeChange}
+            >
+              {availableChartOptions.map((opt, i) => (
+                <ToggleGroupItem key={i} value={opt}>
+                  {opt}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
           </div>
-        </div>
-        <div className="flex flex-col w-5/6">
-          {tabData.chartType === "bar" && (
-            <BarChartComponent
-              chartOptions={tabData.chartOptions as BarChartOptions}
-            />
-          )}
-          {tabData.chartType === "line" && (
-            <LineChartComponent
-              chartOptions={tabData.chartOptions as LineChartOptions}
-            />
-          )}
-          {tabData.chartType === "pie" && (
-            <PieChartCompnent
-              chartOptions={tabData.chartOptions as PieChartOptions}
-            />
-          )}
-        </div>
-      </div>
-    </>
+          <div>
+            {tabData.chartType === ChartType.Bar && (
+              <BarChartComponent
+                chartOptions={tabData.chartOptions as BarChartOptions}
+              />
+            )}
+            {tabData.chartType === ChartType.Line && (
+              <LineChartComponent
+                chartOptions={tabData.chartOptions as LineChartOptions}
+              />
+            )}
+            {tabData.chartType === ChartType.Pie && (
+              <PieChartCompnent
+                chartOptions={tabData.chartOptions as PieChartOptions}
+              />
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

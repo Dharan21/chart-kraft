@@ -18,41 +18,41 @@ import {
 } from "./TransformationText";
 import { useAppSelector } from "@/lib/hooks";
 import { useDispatch } from "react-redux";
-import { updateTabTransformations } from "@/lib/features/tabs/tabsSlice";
+import {
+  updateTabData,
+  updateTabTransformations,
+} from "@/lib/features/appSlice";
+import { Button } from "../ui/button";
+import { PlusCircle } from "lucide-react";
+import { TabData } from "@/models/TabData";
 
-type TransformationsProps = {
-  csvData: CSVData;
-  handleTransformedData: (data: CSVData) => void;
-};
-
-export default function TabTransformationsComponent({
-  csvData,
-  handleTransformedData,
-}: TransformationsProps) {
-  const currentTabIndex = useAppSelector((state) => state.tabs.currentTabIndex);
-  const tabsData = useAppSelector((state) => state.tabs.data);
+export default function TabTransformationsComponent() {
+  const currentTabIndex = useAppSelector((state) => state.app.currentTabIndex);
+  const tabsData = useAppSelector((state) => state.app.tabsData);
   const tabData = tabsData[currentTabIndex];
   const transformations = tabData.transformations;
+  const csvData = tabData.inputData;
   const dispatch = useDispatch();
 
   const [selectedIndex, setSelectedIndex] = useState<number>(-1);
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
-  const addTransformation = (index: number) => {
+  const addTransformation = (type: TransformationType) => {
+    const index = transformations.length;
     if (!isAllowedToAddTransformation(index)) {
       alert("Complete the previous transformations first");
       return;
     }
     const newTransformations: Transformation[] = [...transformations];
-    if (index >= 0 && index < newTransformations.length) {
-      const inputCsvData =
-        index == 0 ? csvData : newTransformations[index - 1].outputData;
-      newTransformations.splice(index, 0, {
-        inputData: inputCsvData,
+    if (index == 0) {
+      newTransformations.push({
+        inputData: csvData,
+        type,
       } as Transformation);
     } else {
       newTransformations.push({
         inputData: newTransformations[newTransformations.length - 1].outputData,
+        type,
       } as Transformation);
     }
 
@@ -100,10 +100,16 @@ export default function TabTransformationsComponent({
   };
 
   const handleApplyTransformationsClick = () => {
+    if (transformations.length == 0) return;
     if (isAllowedToAddTransformation(transformations.length - 1)) {
       const outputData = transformations[transformations.length - 1].outputData;
       if (!!outputData) {
-        handleTransformedData(outputData);
+        // handleTransformedData(outputData);
+        const updatedTabData: TabData = {
+          ...tabData,
+          transformedData: outputData,
+        };
+        dispatch(updateTabData({ index: currentTabIndex, updatedTabData }));
       } else {
         alert(
           "Could not apply transformations. Some transformations are incomplete."
@@ -117,68 +123,96 @@ export default function TabTransformationsComponent({
   };
 
   const handleResetTransformationsClick = () => {
-    dispatch(
-      updateTabTransformations([{ inputData: csvData } as Transformation])
-    );
-    handleTransformedData(csvData);
+    dispatch(updateTabTransformations([]));
+    // handleTransformedData(csvData);
   };
 
   return (
     <>
-      <TransformationsSelectionDialogComponent
-        isOpen={isDialogOpen}
-        onClose={handleTransformationDialogClose}
-        transformation={transformations[selectedIndex]}
-      />
-      <div className="text-center mb-2">Transformations</div>
-      {transformations.map((transformation, index) => (
-        <TransformationBoxComponent
-          key={index}
-          isDisplayPrevAdd={index == 0}
-          isDisplayNextAdd={index == transformations.length - 1}
-          isDeleteDisabled={transformations.length == 1 && index == 0}
-          handlePrevAdd={() => addTransformation(index)}
-          handleNextAdd={() => addTransformation(index + 1)}
-          onEdit={() => handleEditTransformation(index)}
-          onDelete={() => handleDeleteTransformation(index)}
-        >
-          {!!transformation && (
-            <>
-              {transformation.type == TransformationType.Filter && (
-                <FilterTransformationTextComponent
-                  filterData={transformation.data as FilterData}
-                  rowsCount={transformation.outputData?.rows.length ?? 0}
-                />
+      {isDialogOpen && (
+        <TransformationsSelectionDialogComponent
+          isOpen={isDialogOpen}
+          onClose={handleTransformationDialogClose}
+          transformation={transformations[selectedIndex]}
+        />
+      )}
+      <div className="flex flex-col gap-2">
+        <div className="text-xl font-semibold">Transformations</div>
+        <div className="flex gap-2 flex-wrap">
+          <Button
+            variant="outline"
+            onClick={() => addTransformation(TransformationType.Filter)}
+          >
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Add Filter
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => addTransformation(TransformationType.Sort)}
+          >
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Add Sort
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => addTransformation(TransformationType.Group)}
+          >
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Add Group By
+          </Button>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {transformations.map((transformation, index) => (
+            <TransformationBoxComponent
+              key={index}
+              isDisplayPrevAdd={false}
+              isDisplayNextAdd={false}
+              isDeleteDisabled={transformations.length == 1 && index == 0}
+              // handlePrevAdd={() => addTransformation(index)}
+              // handleNextAdd={() => addTransformation(index + 1)}
+              handlePrevAdd={() => {}}
+              handleNextAdd={() => {}}
+              onEdit={() => handleEditTransformation(index)}
+              onDelete={() => handleDeleteTransformation(index)}
+            >
+              {!!transformation && (
+                <>
+                  {transformation.type == TransformationType.Filter && (
+                    <FilterTransformationTextComponent
+                      filterData={transformation.data as FilterData}
+                      rowsCount={transformation.outputData?.rows.length ?? 0}
+                    />
+                  )}
+                  {transformation.type == TransformationType.Sort && (
+                    <SortTransformationTextComponent
+                      sortData={transformation.data as SortData[]}
+                      rowsCount={transformation.outputData?.rows.length ?? 0}
+                    />
+                  )}
+                  {transformation.type == TransformationType.Group && (
+                    <GroupTransformationTextComponent
+                      groupData={transformation.data as GroupData}
+                      rowsCount={transformation.outputData?.rows.length ?? 0}
+                    />
+                  )}
+                </>
               )}
-              {transformation.type == TransformationType.Sort && (
-                <SortTransformationTextComponent
-                  sortData={transformation.data as SortData[]}
-                  rowsCount={transformation.outputData?.rows.length ?? 0}
-                />
-              )}
-              {transformation.type == TransformationType.Group && (
-                <GroupTransformationTextComponent
-                  groupData={transformation.data as GroupData}
-                  rowsCount={transformation.outputData?.rows.length ?? 0}
-                />
-              )}
-            </>
-          )}
-        </TransformationBoxComponent>
-      ))}
-      <div className=" flex flex-col items-center">
-        <button
-          className="bg-primary p-2 font-semibold mt-6"
-          onClick={handleApplyTransformationsClick}
-        >
-          Apply Transformations
-        </button>
-        <button
-          className="bg-danger p-2 font-semibold mt-2"
-          onClick={handleResetTransformationsClick}
-        >
-          Reset Transformations
-        </button>
+            </TransformationBoxComponent>
+          ))}
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <Button type="button" onClick={handleApplyTransformationsClick}>
+            Apply Transformations
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleResetTransformationsClick}
+          >
+            Reset Transformations
+          </Button>
+        </div>
       </div>
     </>
   );
