@@ -1,12 +1,4 @@
 import { CSVData, SupportedDataType } from "@/models/CSVData";
-// import {
-//   Table,
-//   TableBody,
-//   TableCell,
-//   TableHead,
-//   TablePagination,
-//   TableRow,
-// } from "@mui/material";
 import { format } from "date-fns";
 import React from "react";
 import {
@@ -19,6 +11,15 @@ import {
 } from "../ui/table";
 import { Pagination } from "./TablePagination";
 import { Card, CardContent } from "../ui/card";
+// import {
+//   Pagination,
+//   PaginationContent,
+//   PaginationEllipsis,
+//   PaginationItem,
+//   PaginationLink,
+//   PaginationNext,
+//   PaginationPrevious,
+// } from "../ui/pagination";
 
 type TableTabProps = {
   csvData: CSVData;
@@ -102,6 +103,32 @@ export default function TableTabComponent({ csvData }: TableTabProps) {
             rowsPerPage={rowsPerPage}
             totalItems={totalItems}
           />
+          {/* <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious href="#" />
+              </PaginationItem>
+              {page > 1 && (
+                <PaginationItem>
+                  <PaginationLink href="#">{page - 1}</PaginationLink>
+                </PaginationItem>
+              )}
+              <PaginationItem>
+                <PaginationLink href="#">{page}</PaginationLink>
+              </PaginationItem>
+              {page < totalPages && (
+                <PaginationItem>
+                  <PaginationLink href="#">{page + 1}</PaginationLink>
+                </PaginationItem>
+              )}
+              <PaginationItem>
+                <PaginationEllipsis />
+              </PaginationItem>
+              <PaginationItem>
+                <PaginationNext href="#" />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination> */}
         </CardContent>
       </Card>
     </>

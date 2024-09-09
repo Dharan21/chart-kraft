@@ -24,15 +24,15 @@ export default function CraftLayout({
 
   const getLinkClass = (routeName: string) => {
     const isSelected = route && route.includes(routeName);
-    return `flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
+    return `flex items-center gap-3 rounded-lg px-3 py-2 transition-all justify-center ${
       isSelected ? "bg-primary text-background" : "text-secondary-foreground"
     }`;
   };
 
   return (
     <>
-      <div className="flex flex-1 overflow-hidden">
-        <aside className="hidden border-r sm:block">
+      <div className="flex flex-col sm:flex-row">
+        <aside className="sm:border-r sm:block">
           <div className="flex flex-col gap-2 p-4">
             <Link
               href={CONSTANTS.ROUTES.CRAFTROUTES.TRANSFORM}
@@ -52,7 +52,7 @@ export default function CraftLayout({
             </Link>
           </div>
         </aside>
-        <main className="flex flex-1 flex-col gap-4 p-4 pt-0 md:gap-8 md:p-6 md:pt-4">
+        <main className="flex flex-col gap-4 p-4 pt-0 md:gap-8 md:p-6 md:pt-4">
           {children}
         </main>
       </div>

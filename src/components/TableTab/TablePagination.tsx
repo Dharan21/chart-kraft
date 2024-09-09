@@ -54,7 +54,7 @@ export function Pagination({
   };
 
   return (
-    <div className="flex items-center justify-between px-2 py-4">
+    <div className="flex flex-col sm:flex-row items-center justify-between px-2 py-4 gap-2">
       <div className="flex items-center space-x-2">
         <span className="text-sm text-gray-700">Rows per page:</span>
         <Select
@@ -73,7 +73,7 @@ export function Pagination({
           </SelectContent>
         </Select>
       </div>
-      <div className="flex items-center space-x-6">
+      <div className="flex flex-col sm:flex-row items-center space-x-6 gap-2">
         <span className="flex items-center gap-1">
           <div className="text-sm text-gray-700">Page</div>
           <Input

@@ -34,7 +34,7 @@ export default function VisualizePage() {
         onValueChange={(value) => handleTabChange(parseInt(value))}
         className="w-full"
       >
-        <div className="flex items-center">
+        <div className="flex items-center w-full h-fit overflow-x-auto">
           <Button
             type="button"
             onClick={() => handleTabAdd()}
@@ -44,7 +44,7 @@ export default function VisualizePage() {
             <PlusCircle className="w-4 h-4 mr-2" />
             Add Tab
           </Button>
-          <TabsList>
+          <TabsList className="flex flex-wrap">
             {tabsData.map((tab, index) => (
               <TabsTrigger
                 key={index}
