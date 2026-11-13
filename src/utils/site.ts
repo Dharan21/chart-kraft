@@ -1,9 +1,9 @@
 export const SITE_NAME = "Chart Craft";
 
-// Set NEXT_PUBLIC_SITE_URL to the deployed origin (e.g. https://chartcraft.app)
-// so canonical URLs, the sitemap and social previews point at production.
+// Canonical origin used for canonical URLs, the sitemap and social previews.
+// Override with NEXT_PUBLIC_SITE_URL (e.g. a custom domain or local dev).
 export const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://chart-kraft.vercel.app"
 ).replace(/\/$/, "");
 
 export const SITE_TITLE = "Chart Craft: Turn CSV files into charts in your browser";
