@@ -88,14 +88,14 @@ export default function LineChartComponent({ chartOptions }: LineChartProps) {
     <>
       <div className="flex gap-4 mb-4">
         <div className="flex flex-col gap-2">
-          <Label htmlFor="plot-x">Chart Type</Label>
+          <Label htmlFor="plot-x">Plot on x</Label>
           <Select
             name="plot-x"
             value={chartOptions.plotX ?? ""}
             onValueChange={handleSelectionChange}
           >
             <SelectTrigger id="plot-x">
-              <SelectValue placeholder="Select chart type" />
+              <SelectValue placeholder="Select column" />
             </SelectTrigger>
             <SelectContent>
               {plotXOptions.map((header, i) => (
@@ -118,6 +118,11 @@ export default function LineChartComponent({ chartOptions }: LineChartProps) {
           />
         </div>
       </div>
+      {!(chartOptions.plotX && chartOptions.plotY?.length) && (
+        <p className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
+          Choose a column for the x axis and at least one numeric column for y to see your chart.
+        </p>
+      )}
       {chartOptions.plotX &&
         chartOptions.plotY &&
         chartOptions.plotY.length > 0 && (

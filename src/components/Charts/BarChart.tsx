@@ -84,8 +84,13 @@ export default function BarChartComponent({ chartOptions }: BarChartProps) {
   };
 
   const valueFormatter = (value: any) => {
+    if (value == null) return "";
     if (isDate(value)) {
-      return value.toDateString();
+      return value.toISOString().slice(0, 10);
+    }
+    // Date columns are stored as ISO strings; show just the day.
+    if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}T/.test(value)) {
+      return value.slice(0, 10);
     }
     return value.toString();
   };
@@ -94,14 +99,14 @@ export default function BarChartComponent({ chartOptions }: BarChartProps) {
     <>
       <div className="flex gap-4 mb-4">
         <div className="flex flex-col gap-2">
-          <Label htmlFor="plot-x">Chart Type</Label>
+          <Label htmlFor="plot-x">Plot on x</Label>
           <Select
             name="plot-x"
             value={chartOptions.plotX ?? ""}
             onValueChange={handleSelectionChange}
           >
             <SelectTrigger id="plot-x">
-              <SelectValue placeholder="Select chart type" />
+              <SelectValue placeholder="Select column" />
             </SelectTrigger>
             <SelectContent>
               {plotXOptions.map((header, i) => (
@@ -124,6 +129,11 @@ export default function BarChartComponent({ chartOptions }: BarChartProps) {
           />
         </div>
       </div>
+      {!(chartOptions.plotX && chartOptions.plotY?.length) && (
+        <p className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
+          Choose a column for the x axis and at least one numeric column for y to see your chart.
+        </p>
+      )}
       {chartOptions.plotX &&
         chartOptions.plotY &&
         chartOptions.plotY.length > 0 && (

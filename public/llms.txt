@@ -1,0 +1,25 @@
+# Chart Craft
+
+> Chart Craft is a free, browser-based tool that turns CSV files into charts. Users upload a CSV, choose column data types, filter / sort / group the data, and build bar, line and pie charts across multiple tabs. All processing happens client-side: uploaded data is never sent to a server.
+
+## What it does
+
+- Upload a CSV and set each column's type (String, Number, Date), with validation of bad values.
+- Transform data with filters (text, number and date operators, including comparing against another column), multi-column sorts (up to 3), and group-by with sum, average, count, min and max.
+- Visualize with bar, line and pie charts; open several chart tabs, each with its own transformations.
+- Try it instantly with built-in sample sales data (no file needed).
+
+## Who it is for
+
+Analysts, students, founders and anyone who has a CSV export and wants a quick chart without spreadsheets, accounts or uploads to a third party.
+
+## Key facts
+
+- Cost: free, no account required.
+- Privacy: data stays in the browser tab; refreshing the page clears it.
+- Supported input: .csv files with a header row; quoted fields and UTF-8 BOM are handled.
+
+## Pages
+
+- [Home / upload](/): the app entry point and feature overview.
+- [Sample data](/sample-sales.csv): example CSV used for the in-app demo.

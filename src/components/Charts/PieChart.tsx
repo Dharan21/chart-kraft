@@ -94,6 +94,11 @@ export default function PieChartCompnent({ chartOptions }: PieChartProps) {
           </Select>
         </div>
       </div>
+      {!chartOptions.valueColumn && (
+        <p className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
+          Choose a value column to see your pie chart.
+        </p>
+      )}
       {chartOptions.valueColumn && (
         <ChartFragement>
           <PieChart

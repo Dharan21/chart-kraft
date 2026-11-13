@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "../ui/select";
 import { Button } from "../ui/button";
+import { notify } from "@/components/Feedback/feedback";
 
 type SortTransformationOptionsComponentProps = {
   sortData: SortData[];
@@ -36,7 +37,7 @@ export default function SortTransformationOptionsComponent({
 
   const handleAddSortColumnClick = () => {
     if (sortDataCopy && sortDataCopy.length >= 3) {
-      alert("Max 3 columns can be sorted");
+      notify("Max 3 columns can be sorted");
       return;
     }
     setSortDataCopy((prev) => {
@@ -89,14 +90,14 @@ export default function SortTransformationOptionsComponent({
       (sortData) => !!sortData.column
     );
     if (!allColumnsFilled) {
-      alert("Please fill all columns");
+      notify("Please fill all columns");
       return false;
     }
     const areColumnsunique =
       new Set(sortDataCopy.map((sortData) => sortData.column)).size !==
       sortDataCopy.length;
     if (areColumnsunique) {
-      alert("Columns must be unique");
+      notify("Columns must be unique");
       return false;
     }
     return true;

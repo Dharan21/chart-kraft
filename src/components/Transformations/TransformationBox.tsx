@@ -35,20 +35,22 @@ export default function TransformationBoxComponent({
           </Button>
         </div>
       )}
-      <Card className="w-[350px] flex gap-2 p-2">
+      <Card className="flex w-full max-w-[350px] gap-2 p-2">
         <div className="w-10/12">{children}</div>
-        <Button variant="ghost" size="sm" onClick={onEdit}>
-          <Edit className="h-4 w-4" />
+        <Button variant="ghost" size="sm" onClick={onEdit} aria-label="Edit transformation" title="Edit">
+          <Edit className="h-4 w-4" aria-hidden="true" />
         </Button>
         <Button
           variant="ghost"
           size="sm"
           disabled={isDeleteDisabled}
+          aria-label="Delete transformation"
+          title="Delete"
           onClick={() => {
             !isDeleteDisabled && onDelete();
           }}
         >
-          <Trash2 className="h-4 w-4" />
+          <Trash2 className="h-4 w-4" aria-hidden="true" />
         </Button>
       </Card>
       {isDisplayNextAdd && (

@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Upload, ChevronRight, ChevronLeft, Trash2, Plus } from "lucide-react";
+import {
+  Upload,
+  ChevronRight,
+  ChevronLeft,
+  Trash2,
+  Plus,
+  FileSpreadsheet,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -32,6 +39,7 @@ import {
   convertCSVDataToSpecficTypes,
   parseCSV,
   validateCSVData,
+  describeErrorLines,
 } from "@/utils/utility-functions";
 import { CSVData, SupportedDataType } from "@/models/CSVData";
 import {
@@ -44,6 +52,7 @@ import { useDispatch } from "react-redux";
 import { resetTabs, setUploadedCsvData } from "@/lib/features/appSlice";
 import { useRouter } from "next/navigation";
 import * as CONSTANTS from "@/utils/constants";
+import { notify } from "@/components/Feedback/feedback";
 
 type ColumnData = {
   header: string;
@@ -53,45 +62,82 @@ type ColumnData = {
 
 export default function Component() {
   const [currentStep, setCurrentStep] = useState(1);
-  const [file, setFile] = useState<File | null>(null);
+  const [fileName, setFileName] = useState<string | null>(null);
+  const [isLoadingSample, setIsLoadingSample] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const [columns, setColumns] = useState<ColumnData[]>([]);
   const [csvData, setCSVData] = useState<CSVData>({ headers: [], rows: [] });
   const [availableColumns, setAvailableColumns] = useState<string[]>([]);
   const dispatch = useDispatch();
   const router = useRouter();
 
+  const loadCsvText = (
+    contents: string,
+    name: string,
+    presetTypes: Record<string, SupportedDataType> = {}
+  ) => {
+    const csv = parseCSV(contents);
+    const sampleRows = csv.rows
+      .slice(0, 3)
+      .map((row) => Object.values(row) as string[]);
+    setCSVData(csv);
+    setColumns(
+      csv.headers.map((header, index) => ({
+        header: header.name,
+        type: presetTypes[header.name] ?? SupportedDataType.String,
+        sampleData: sampleRows.map((row) => row[index]),
+      }))
+    );
+    setAvailableColumns([]);
+    setFileName(name);
+  };
+
+  const processFile = (file: File): boolean => {
+    if (!file.name.toLowerCase().endsWith(".csv")) {
+      notify("Please select a .csv file.");
+      return false;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => loadCsvText(e.target?.result as string, file.name);
+    reader.onerror = () => notify("Could not read that file.");
+    reader.readAsText(file);
+    return true;
+  };
+
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+    if (!processFile(file)) event.target.value = "";
+  };
 
-    const fileNameParts = file.name.split(".");
-    const fileExtension = fileNameParts[fileNameParts.length - 1].toLowerCase();
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsDragging(false);
+    const file = event.dataTransfer.files?.[0];
+    if (file) processFile(file);
+  };
 
-    if (fileExtension === "csv") {
-      setFile(file);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const contents = e.target?.result as string;
-        const csv = parseCSV(contents);
-        const extractedHeaders = csv.headers.map((header) => header.name);
-        const extractedSampleData = csv.rows
-          .slice(0, 3)
-          .map((row) => Object.values(row) as string[]);
-        setCSVData(csv);
-        const newColumns = extractedHeaders.map((header, index) => ({
-          header,
-          type: SupportedDataType.String,
-          sampleData: extractedSampleData.map((row) => row[index]),
-        }));
-        setColumns(newColumns);
-        setAvailableColumns([]);
-      };
-      reader.readAsText(file);
+  const handleUseSample = async () => {
+    setIsLoadingSample(true);
+    try {
+      const res = await fetch("/sample-sales.csv");
+      if (!res.ok) throw new Error(res.statusText);
+      loadCsvText(await res.text(), "sample-sales.csv", {
+        Date: SupportedDataType.Date,
+        "Units Sold": SupportedDataType.Number,
+        Revenue: SupportedDataType.Number,
+        "Profit Margin": SupportedDataType.Number,
+      });
+      setCurrentStep(2);
+    } catch {
+      notify("Could not load the sample data.");
+    } finally {
+      setIsLoadingSample(false);
     }
   };
 
   const handleNext = () => {
-    if (currentStep === 1 && file) {
+    if (currentStep === 1 && fileName) {
       setCurrentStep(2);
     }
   };
@@ -139,7 +185,7 @@ export default function Component() {
       }, {} as { [key: string]: SupportedDataType });
     const errorLineNos = validateCSVData(csvData, selectedDataTypes);
     if (errorLineNos.length > 0) {
-      alert("errorLineNos: " + errorLineNos.join(", "));
+      notify(describeErrorLines(errorLineNos));
     } else {
       isValidated = true;
     }
@@ -157,31 +203,83 @@ export default function Component() {
   };
 
   return (
-    <Card className="w-full max-w-4xl mx-auto">
+    <div className="mx-auto w-full max-w-4xl">
+      <section className="py-6 text-center sm:py-10">
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+          Turn any CSV into charts, right in your browser
+        </h1>
+        <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
+          Upload a CSV, then filter, sort and group your data and build bar,
+          line and pie charts. Free, no sign-up, and your data never leaves
+          your device.
+        </p>
+        <ul className="mt-5 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm">
+          <li>Typed columns: String, Number, Date</li>
+          <li>Filter, sort and group by</li>
+          <li>Bar, line and pie charts</li>
+          <li>100% private, runs locally</li>
+        </ul>
+      </section>
+    <Card className="w-full">
       <CardHeader>
         <CardTitle>CSV Data Import - Step {currentStep} of 2</CardTitle>
       </CardHeader>
       <CardContent>
         {currentStep === 1 ? (
           <div className="space-y-4">
-            <Label htmlFor="csv-upload">Upload CSV File</Label>
-            <div className="flex items-center space-x-2">
+            <div
+              onDragOver={(e) => {
+                e.preventDefault();
+                setIsDragging(true);
+              }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={handleDrop}
+              className={`flex flex-col items-center gap-3 rounded-lg border-2 border-dashed p-8 text-center transition-colors ${
+                isDragging ? "border-primary bg-accent" : "border-input"
+              }`}
+            >
+              <Upload className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
+              <Label htmlFor="csv-upload" className="text-base">
+                Drag and drop a CSV file here, or choose one
+              </Label>
               <Input
                 id="csv-upload"
                 type="file"
-                accept=".csv"
+                accept=".csv,text/csv"
                 onChange={handleFileUpload}
+                className="max-w-xs cursor-pointer"
+                aria-describedby="csv-upload-hint"
               />
-              <Button size="icon">
-                <Upload className="h-4 w-4" />
-                <span className="sr-only">Upload CSV</span>
-              </Button>
+              <p id="csv-upload-hint" className="text-xs text-muted-foreground">
+                First row must be column headers. Your file is processed in this
+                browser and is never uploaded.
+              </p>
             </div>
-            {file && (
-              <div className="text-sm text-muted-foreground">
-                File uploaded: {file.name}
+            {fileName && (
+              <div className="text-sm text-muted-foreground" role="status">
+                File ready: {fileName}
               </div>
             )}
+            <div className="flex items-center gap-3 pt-2 text-sm text-muted-foreground">
+              <span>No file handy?</span>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleUseSample}
+                disabled={isLoadingSample}
+              >
+                <FileSpreadsheet className="mr-2 h-4 w-4" />
+                {isLoadingSample ? "Loading..." : "Use sample sales data"}
+              </Button>
+              <a
+                href="/sample-sales.csv"
+                download
+                className="underline underline-offset-4"
+              >
+                Download it
+              </a>
+            </div>
           </div>
         ) : (
           <div className="space-y-4">
@@ -269,7 +367,7 @@ export default function Component() {
           <ChevronLeft className="mr-2 h-4 w-4" /> Back
         </Button>
         {currentStep == 1 && (
-          <Button onClick={handleNext} disabled={!file}>
+          <Button onClick={handleNext} disabled={!fileName}>
             Next
             <ChevronRight className="ml-2 h-4 w-4" />
           </Button>
@@ -282,5 +380,6 @@ export default function Component() {
         )}
       </CardFooter>
     </Card>
+    </div>
   );
 }

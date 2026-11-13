@@ -12,27 +12,54 @@ import {
   SortData,
 } from "@/models/Transformation";
 
+function splitCSVLine(line: string): string[] {
+  const cells: string[] = [];
+  let current = "";
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inQuotes) {
+      if (ch === '"') {
+        if (line[i + 1] === '"') {
+          current += '"';
+          i++;
+        } else {
+          inQuotes = false;
+        }
+      } else {
+        current += ch;
+      }
+    } else if (ch === '"') {
+      inQuotes = true;
+    } else if (ch === ",") {
+      cells.push(current.trim());
+      current = "";
+    } else {
+      current += ch;
+    }
+  }
+  cells.push(current.trim());
+  return cells;
+}
+
 export function readHeaders(csvString: string): string[] {
-  return csvString
-    .split("\n")[0]
-    .split(",")
-    .map((cell) => cell.trim());
+  const firstLine = csvString.replace(/^\uFEFF/, "").split(/\r?\n/, 1)[0];
+  return splitCSVLine(firstLine);
 }
 
 export function parseCSV(csvString: string): CSVData {
-  const rows = csvString.split("\n");
-  const header = readHeaders(csvString);
-  const data = rows
-    .slice(1)
-    .filter((x) => !!x)
-    .map((row) => {
-      const cells = row.split(",");
-      const rowData: CSVRow = {};
-      header.forEach((key, index) => {
-        rowData[key] = cells[index].trim();
-      });
-      return rowData;
-    });
+  const lines = csvString.replace(/^\uFEFF/, "").split(/\r?\n/);
+  const header = splitCSVLine(lines[0] ?? "");
+  const data: CSVRow[] = [];
+  for (let i = 1; i < lines.length; i++) {
+    if (!lines[i].trim()) continue;
+    const cells = splitCSVLine(lines[i]);
+    const rowData: CSVRow = {};
+    for (let j = 0; j < header.length; j++) {
+      rowData[header[j]] = cells[j] ?? "";
+    }
+    data.push(rowData);
+  }
   return {
     headers: header.map((h) => ({ name: h, type: SupportedDataType.String })),
     rows: data,
@@ -72,6 +99,13 @@ export function validateCSVData(
   });
 
   return errorLines;
+}
+
+export function describeErrorLines(lines: number[]): string {
+  const unique = Array.from(new Set(lines));
+  const shown = unique.slice(0, 10).join(", ");
+  const extra = unique.length > 10 ? ` and ${unique.length - 10} more` : "";
+  return `Some values do not match the selected data types (rows: ${shown}${extra}). Change those columns to String or fix the file.`;
 }
 
 export function convertCSVDataToSpecficTypes(
@@ -188,16 +222,16 @@ export function applySortTransform(
   inputData: CSVData,
   sortData: SortData[]
 ): CSVData {
-  const sortedRows = inputData.rows.sort((a, b) => {
-    for (let i = 0; i < sortData.length; i++) {
-      const { column, direction } = sortData[i];
-      // @ts-ignore
-      if (a[column] > b[column]) {
-        return direction === "asc" ? 1 : -1;
-        // @ts-ignore
-      } else if (a[column] < b[column]) {
-        return direction === "asc" ? -1 : 1;
-      }
+  const sortedRows = [...inputData.rows].sort((a, b) => {
+    for (const { column, direction } of sortData) {
+      const x = a[column];
+      const y = b[column];
+      if (x === y) continue;
+      // nulls always sort last
+      if (x == null) return 1;
+      if (y == null) return -1;
+      const cmp = x > y ? 1 : x < y ? -1 : 0;
+      if (cmp !== 0) return direction === "asc" ? cmp : -cmp;
     }
     return 0;
   });
@@ -212,63 +246,49 @@ export function applyGroupTransform(
   inputData: CSVData,
   groupData: GroupData
 ): CSVData {
-  const groupedRows = inputData.rows.reduce((arr, row) => {
-    const match = arr.find((obj) =>
-      groupData.columns.every((column) => obj[column] === row[column])
-    );
-    if (match) {
-      return arr;
-    } else {
-      const allMatches = inputData.rows.filter((obj) =>
-        groupData.columns.every((column) => obj[column] === row[column])
-      );
-      const newRow: CSVRow = {};
-      groupData.columns.forEach((column) => {
-        newRow[column] = row[column];
-      });
-      groupData.aggregateData.forEach((aggregate) => {
-        switch (aggregate.aggregateOption) {
-          case AggregateOption.Sum:
-            newRow[aggregate.column] = allMatches.reduce(
-              (sum, obj) => sum + (obj[aggregate.column] as number),
-              0
-            );
-            break;
-          case AggregateOption.Average:
-            newRow[aggregate.column] =
-              allMatches.reduce(
-                (sum, obj) => sum + (obj[aggregate.column] as number),
-                0
-              ) / allMatches.length;
-            break;
-          case AggregateOption.Count:
-            newRow[aggregate.column] = allMatches.length;
-            break;
-          case AggregateOption.Min:
-            newRow[aggregate.column] = allMatches.reduce(
-              (min, obj) => Math.min(min, obj[aggregate.column] as number),
-              allMatches[0][aggregate.column] as number
-            );
-            break;
-          case AggregateOption.Max:
-            newRow[aggregate.column] = allMatches.reduce(
-              (max, obj) => Math.max(max, obj[aggregate.column] as number),
-              allMatches[0][aggregate.column] as number
-            );
-            break;
-        }
-      });
-      arr.push(newRow);
-    }
-    return arr;
-  }, [] as CSVRow[]);
+  const buckets = new Map<string, CSVRow[]>();
+  for (const row of inputData.rows) {
+    const key = JSON.stringify(groupData.columns.map((c) => row[c]));
+    const bucket = buckets.get(key);
+    if (bucket) bucket.push(row);
+    else buckets.set(key, [row]);
+  }
+
+  const groupedRows: CSVRow[] = [];
+  buckets.forEach((matches) => {
+    const newRow: CSVRow = {};
+    groupData.columns.forEach((column) => {
+      newRow[column] = matches[0][column];
+    });
+    groupData.aggregateData.forEach(({ column, aggregateOption }) => {
+      const values = matches.map((m) => Number(m[column]) || 0);
+      switch (aggregateOption) {
+        case AggregateOption.Sum:
+          newRow[column] = values.reduce((sum, v) => sum + v, 0);
+          break;
+        case AggregateOption.Average:
+          newRow[column] = values.reduce((sum, v) => sum + v, 0) / values.length;
+          break;
+        case AggregateOption.Count:
+          newRow[column] = matches.length;
+          break;
+        case AggregateOption.Min:
+          newRow[column] = values.reduce((a, v) => Math.min(a, v), values[0]);
+          break;
+        case AggregateOption.Max:
+          newRow[column] = values.reduce((a, v) => Math.max(a, v), values[0]);
+          break;
+      }
+    });
+    groupedRows.push(newRow);
+  });
 
   return {
     headers: inputData.headers.filter(
       (header) =>
         groupData.columns.includes(header.name) ||
-        groupData.aggregateData.map((x) => x.column).includes(header.name)
+        groupData.aggregateData.some((x) => x.column === header.name)
     ),
-    rows: Object.values(groupedRows),
+    rows: groupedRows,
   };
 }

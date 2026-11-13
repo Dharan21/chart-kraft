@@ -25,6 +25,7 @@ import {
 import { Button } from "../ui/button";
 import { PlusCircle } from "lucide-react";
 import { TabData } from "@/models/TabData";
+import { notify, confirmAction } from "@/components/Feedback/feedback";
 
 export default function TabTransformationsComponent() {
   const currentTabIndex = useAppSelector((state) => state.app.currentTabIndex);
@@ -40,7 +41,7 @@ export default function TabTransformationsComponent() {
   const addTransformation = (type: TransformationType) => {
     const index = transformations.length;
     if (!isAllowedToAddTransformation(index)) {
-      alert("Complete the previous transformations first");
+      notify("Complete the previous transformations first");
       return;
     }
     const newTransformations: Transformation[] = [...transformations];
@@ -64,12 +65,13 @@ export default function TabTransformationsComponent() {
     setIsDialogOpen(true);
   };
 
-  const handleDeleteTransformation = (index: number) => {
+  const handleDeleteTransformation = async (index: number) => {
     if (transformations.length == 1) {
       return;
     }
-    const res = confirm(
-      "You will lose all transformations after this. Are you sure?"
+    const res = await confirmAction(
+      "You will lose all transformations after this. Are you sure?",
+      "Delete"
     );
     if (!res) return;
     let newTransformations = [...transformations];
@@ -99,7 +101,7 @@ export default function TabTransformationsComponent() {
     }
   };
 
-  const handleApplyTransformationsClick = () => {
+  const handleApplyTransformationsClick = async () => {
     if (transformations.length == 0) return;
     if (isAllowedToAddTransformation(transformations.length - 1)) {
       const outputData = transformations[transformations.length - 1].outputData;
@@ -111,12 +113,12 @@ export default function TabTransformationsComponent() {
         };
         dispatch(updateTabData({ index: currentTabIndex, updatedTabData }));
       } else {
-        alert(
+        notify(
           "Could not apply transformations. Some transformations are incomplete."
         );
       }
     } else {
-      alert(
+      notify(
         "Could not apply transformations. Some transformations are incomplete."
       );
     }

@@ -2,9 +2,6 @@
 
 import ChartTabComponent from "@/components/ChartTab/ChartTab";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Select, SelectTrigger } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { addTab, changeTab, removeTab } from "@/lib/features/appSlice";
 import { useAppSelector } from "@/lib/hooks";
@@ -15,57 +12,50 @@ export default function VisualizePage() {
   const tabsData = useAppSelector((state) => state.app.tabsData);
   const currentTabIndex = useAppSelector((state) => state.app.currentTabIndex);
   const dispatch = useDispatch();
+  const canClose = tabsData.length > 1;
 
-  const handleTabAdd = () => {
-    dispatch(addTab());
-  };
-
-  const handleCloseTab = (index: number) => {
-    dispatch(removeTab(index));
-  };
-
-  const handleTabChange = (index: number) => {
-    dispatch(changeTab(index));
-  };
   return (
     <>
+      <h1 className="sr-only">Visualize your data</h1>
       <Tabs
         value={currentTabIndex.toString()}
-        onValueChange={(value) => handleTabChange(parseInt(value))}
+        onValueChange={(value) => dispatch(changeTab(parseInt(value)))}
         className="w-full"
       >
-        <div className="flex items-center w-full h-fit overflow-x-auto">
+        <div className="flex h-fit w-full items-center gap-2 overflow-x-auto pb-1">
           <Button
             type="button"
-            onClick={() => handleTabAdd()}
+            onClick={() => dispatch(addTab())}
             size="sm"
-            className="mr-2 shrink-0"
+            className="shrink-0"
           >
-            <PlusCircle className="w-4 h-4 mr-2" />
+            <PlusCircle className="mr-2 h-4 w-4" aria-hidden="true" />
             Add Tab
           </Button>
-          <TabsList className="flex flex-wrap">
-            {tabsData.map((tab, index) => (
-              <TabsTrigger
-                key={index}
-                value={`${index}`}
-                className="flex items-center"
-              >
-                Tab {index + 1}
-                <div
-                  className="ml-2 p-0"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleCloseTab(index);
-                  }}
+          <TabsList className="flex h-auto flex-wrap gap-1">
+            {tabsData.map((_, index) => (
+              <div key={index} className="flex items-center">
+                <TabsTrigger
+                  value={`${index}`}
+                  className="min-h-9 rounded-r-none pr-2"
                 >
-                  <X className="w-4 h-4" />
-                </div>
-              </TabsTrigger>
+                  Tab {index + 1}
+                </TabsTrigger>
+                {canClose && (
+                  <button
+                    type="button"
+                    aria-label={`Close tab ${index + 1}`}
+                    onClick={() => dispatch(removeTab(index))}
+                    className="inline-flex min-h-9 items-center rounded-r-sm px-2 text-muted-foreground hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <X className="h-4 w-4" aria-hidden="true" />
+                  </button>
+                )}
+              </div>
             ))}
           </TabsList>
         </div>
-        {tabsData.map((tab, index) => (
+        {tabsData.map((_, index) => (
           <TabsContent key={index} value={`${index}`}>
             <ChartTabComponent />
           </TabsContent>

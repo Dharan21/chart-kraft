@@ -17,6 +17,7 @@ import {
 } from "../ui/select";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import { notify } from "@/components/Feedback/feedback";
 
 type FilterTransformationOptionsProps = {
   filterData: FilterData;
@@ -94,7 +95,7 @@ export default function FilterTransformationOptionsComponent({
       !filterDataCopy?.type ||
       !filterDataCopy?.value
     ) {
-      alert("Please fill all the fields");
+      notify("Please fill all the fields");
       return false;
     }
 
@@ -102,7 +103,7 @@ export default function FilterTransformationOptionsComponent({
       filterDataCopy?.type === FilterType.Relative &&
       !headers.find((header) => header.name === filterDataCopy?.value)
     ) {
-      alert("Invalid column selected");
+      notify("Invalid column selected");
       return false;
     }
 
@@ -115,7 +116,7 @@ export default function FilterTransformationOptionsComponent({
     ) {
       const value = parseFloat(filterDataCopy?.value);
       if (isNaN(value)) {
-        alert("Invalid number entered");
+        notify("Invalid number entered");
         return false;
       }
     }
@@ -126,7 +127,7 @@ export default function FilterTransformationOptionsComponent({
     ) {
       const date = new Date(filterDataCopy?.value);
       if (isNaN(date.getTime())) {
-        alert("Invalid date entered");
+        notify("Invalid date entered");
         return false;
       }
     }

@@ -96,7 +96,7 @@ export default function TransformationsSelectionDialogComponent({
     transformation.inputData.rows.length === 0
   ) {
     return (
-      <DialogComponent isOpen={isOpen} onClose={onClose}>
+      <DialogComponent isOpen={isOpen} onClose={onClose} label="Edit transformation">
         <div className="text-center">No data to transform</div>
       </DialogComponent>
     );
@@ -104,7 +104,7 @@ export default function TransformationsSelectionDialogComponent({
 
   return (
     <>
-      <DialogComponent isOpen={isOpen} onClose={onClose}>
+      <DialogComponent isOpen={isOpen} onClose={onClose} label="Edit transformation">
         <div className="flex flex-col gap-4">
           <div className="font-bold">Edit Transformation</div>
           <Select

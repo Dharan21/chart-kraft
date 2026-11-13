@@ -28,6 +28,7 @@ import {
 import { Button } from "../ui/button";
 import { PlusCircle } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
+import { notify, confirmAction } from "@/components/Feedback/feedback";
 
 export default function TransformationsComponent() {
   const transformations = useAppSelector(
@@ -41,7 +42,7 @@ export default function TransformationsComponent() {
     if (isAllowedToAddTransformation(transformations.length)) {
       dispatch(addGlobalTransformation(type));
     } else {
-      alert("Complete the previous transformations first");
+      notify("Complete the previous transformations first");
     }
   };
 
@@ -50,12 +51,13 @@ export default function TransformationsComponent() {
     setIsDialogOpen(true);
   };
 
-  const handleDeleteTransformation = (index: number) => {
+  const handleDeleteTransformation = async (index: number) => {
     if (transformations.length == 1) {
       return;
     }
-    const res = confirm(
-      "You will lose all transformations after this. Are you sure?"
+    const res = await confirmAction(
+      "You will lose all transformations after this. Are you sure?",
+      "Delete"
     );
     if (!res) return;
     dispatch(deleteGlobalTransformation(index));
@@ -83,25 +85,26 @@ export default function TransformationsComponent() {
     }
   };
 
-  const handleApplyTransformationsClick = () => {
+  const handleApplyTransformationsClick = async () => {
     if (transformations.length == 0) return;
     if (isAllowedToAddTransformation(transformations.length - 1)) {
       const outputData = transformations[transformations.length - 1].outputData;
       if (!!outputData) {
         if (
-          confirm(
-            "This action will reset your tabs data. Are you sure you want to proceed?"
+          await confirmAction(
+            "This action will reset your tabs data. Are you sure you want to proceed?",
+            "Apply"
           )
         ) {
           dispatch(applyGlobalTransformations());
         }
       } else {
-        alert(
+        notify(
           "Could not apply transformations. Some transformations are incomplete."
         );
       }
     } else {
-      alert(
+      notify(
         "Could not apply transformations. Some transformations are incomplete."
       );
     }

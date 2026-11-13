@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from "react";
 import DialogComponent from "@/components/Dialog/Dialog";
 import { CSVData, SupportedDataType } from "@/models/CSVData";
-import { validateCSVData } from "@/utils/utility-functions";
+import {
+  describeErrorLines,
+  validateCSVData,
+} from "@/utils/utility-functions";
 import { MdDelete } from "react-icons/md";
+import { notify } from "@/components/Feedback/feedback";
 
 interface HeadersTypeSelectionProps {
   isOpen: boolean;
@@ -44,7 +48,7 @@ export default function HeadersTypeSelectionComponent({
   const validate = () => {
     const errorLineNos = validateCSVData(csvData, selectedDataTypes);
     if (errorLineNos.length > 0) {
-      alert("errorLineNos: " + errorLineNos.join(", "));
+      notify(describeErrorLines(errorLineNos));
     } else {
       setIsShowStartCrafting(true);
     }
@@ -65,7 +69,7 @@ export default function HeadersTypeSelectionComponent({
   };
 
   return (
-    <DialogComponent isOpen={isOpen} onClose={onClose}>
+    <DialogComponent isOpen={isOpen} onClose={onClose} label="Choose column data types">
       <div className="text-xl">Select Data Types</div>
       <form>
         <div className="max-h-[40vh] overflow-y-auto mb-2">

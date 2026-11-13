@@ -6,6 +6,10 @@ export const makeStore = () => {
     reducer: {
       app: appSlice,
     },
+    // CSV datasets are large; the dev-only deep immutability/serializable
+    // scans of every row on every action make the UI crawl.
+    middleware: (getDefault) =>
+      getDefault({ immutableCheck: false, serializableCheck: false }),
   });
 };
 

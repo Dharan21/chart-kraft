@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "../ui/select";
 import { Button } from "../ui/button";
+import { notify } from "@/components/Feedback/feedback";
 
 type GroupTransformationOptionsComponentProps = {
   groupData: GroupData;
@@ -147,18 +148,18 @@ export default function GroupTransformationsOptionsComponent({
       const allColumnsUnique =
         new Set(filledColumns).size === filledColumns.length;
       if (!allColumnsUnique) {
-        alert("Columns should be unique");
+        notify("Columns should be unique");
         return false;
       }
     } else {
-      alert("Please select at least one column to group by");
+      notify("Please select at least one column to group by");
       return false;
     }
     const allAggregatesFilled = groupDataCopy.aggregateData.every(
       (aggregate) => !!aggregate.column && !!aggregate.aggregateOption
     );
     if (!allAggregatesFilled) {
-      alert("Please fill all aggregates");
+      notify("Please fill all aggregates");
       return false;
     }
     return true;

@@ -3,7 +3,6 @@ import { ChartOptions, ChartType } from "@/models/ChartOptions";
 import { TabData } from "@/models/TabData";
 import { Transformation, TransformationType } from "@/models/Transformation";
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
-import { add } from "date-fns";
 
 export interface AppState {
   uploadedCsvData: CSVData;
@@ -104,6 +103,12 @@ export const AppSlice = createSlice({
       state.tabsData = state.tabsData.filter(
         (_, index) => index !== action.payload
       );
+      if (
+        state.currentTabIndex > action.payload ||
+        state.currentTabIndex >= state.tabsData.length
+      ) {
+        state.currentTabIndex = Math.max(0, state.currentTabIndex - 1);
+      }
     },
     updateTabData: (
       state,
